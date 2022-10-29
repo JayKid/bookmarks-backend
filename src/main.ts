@@ -1,7 +1,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import { knex as KnexFactory } from "knex";
 
-import BookmarkHandler from "./handlers/bookmarks";
+import BookmarksHandler from "./handlers/bookmarks";
+import BookmarksService from './services/bookmarks';
+import BookmarksStore from './stores/bookmarks';
+import appConfig from '../config';
 
 dotenv.config();
 
@@ -9,14 +13,22 @@ dotenv.config();
 const app = express();
 const SERVER_PORT = process.env.SERVER_PORT;
 
-// Initialize handlers
-const bookmarkHandler = new BookmarkHandler();
-
-// Bind routes to handlers
-app.get('/', (req, res) => {
-    res.send('Hi!');
+// Initialize DB
+const knex = KnexFactory({
+    client: "pg",
+    connection: appConfig.knex,
 });
 
+// Initialize stores
+const bookmarksStore = new BookmarksStore(knex);
+
+// Initialize services
+const bookmarksService = new BookmarksService(bookmarksStore);
+
+// Initialize handlers
+const bookmarkHandler = new BookmarksHandler(bookmarksService);
+
+// Bind routes to handlers
 app.get('/bookmarks', bookmarkHandler.getBookmarks);
 
 // Start server
