@@ -10,6 +10,16 @@ After looking around and not being convinced with any of the existing OSS soluti
 
 ## Running the server locally
 
-+ `npm start` will give you a nodemon process watching the TS files and running the node server on the port specified by `SERVER_PORT` on your `.env` file.
+### Database
 
-In order to create and populate your own `.env` file, duplicate the `.env-example` file present at the root of the repo and replace the port with your desired value.
++ `docker-compose up` will spin up a PostgreSQL instance and an `adminer` frontend to easily interact with it via UI.
+
+You can access this UI via `http://localhost:8080` and the DB on the default PostgreSQL port `5432`
+
+All credentials for the database are by now hardcoded in `docker-compose.yaml`. You will need these values in your `.env` file too. 
+
+In order to create and populate your own `.env` file, duplicate the `.env-example` file present at the root of the repo and replace the DB variables with your desired values.
+
+### Application server
+
++ `npm start` will give you a nodemon process watching the TS files and running the node server on the port specified by `SERVER_PORT` on your `.env` file.
