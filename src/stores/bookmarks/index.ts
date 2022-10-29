@@ -13,8 +13,8 @@ export default class BookmarksStore {
         return this.db<Bookmark, Bookmark[]>(this.TABLE_NAME);
     }
 
-    public getBookmarks = async (): Promise<Bookmark> => {
-        const [bookmarks] = await this.getTable();
+    public getBookmarks = async (): Promise<Bookmark[]> => {
+        const bookmarks = await this.getTable();
         return bookmarks;
     };
 };
