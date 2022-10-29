@@ -26,10 +26,10 @@ const bookmarksStore = new BookmarksStore(knex);
 const bookmarksService = new BookmarksService(bookmarksStore);
 
 // Initialize handlers
-const bookmarkHandler = new BookmarksHandler(bookmarksService);
+const bookmarksHandler = new BookmarksHandler(bookmarksService);
 
 // Bind routes to handlers
-app.get('/bookmarks', bookmarkHandler.getBookmarks);
+app.get('/bookmarks', bookmarksHandler.getBookmarks);
 
 // Start server
 app.listen(SERVER_PORT, () => {
