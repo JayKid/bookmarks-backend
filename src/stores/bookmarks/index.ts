@@ -14,7 +14,7 @@ export default class BookmarksStore {
     }
 
     public getBookmarks = async (): Promise<Bookmark[]> => {
-        const bookmarks = await this.getTable();
+        const bookmarks = await this.getTable().orderBy("created_at", "desc");
         return bookmarks;
     };
 };
