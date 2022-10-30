@@ -23,13 +23,13 @@ export default class BookmarksHandler {
 
     public addBookmark = async (req: Request, res: Response) => {
         // Validate input
-        if (!req.body?.bookmark?.url) {
+        if (!req.body?.url) {
             return res.status(400).json({ message: "missing URL" });
         }
-        if (!this.isValidUrl(req.body.bookmark.url)) {
+        if (!this.isValidUrl(req.body.url)) {
             return res.status(400).json({ message: "invalid URL provided" });
         }
-        const { url, title } = req.body.bookmark;
+        const { url, title } = req.body;
         // Save bookmark
         const bookmark = await this.bookmarksService.addBookmark(url, title);
         // Deal with errors if needed
