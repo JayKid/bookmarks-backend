@@ -1,3 +1,4 @@
+import { BlobOptions } from "buffer";
 import { Request, Response } from "express";
 import BookmarksService from "../../services/Bookmarks";
 
@@ -22,6 +23,9 @@ export default class BookmarksHandler {
         if (!req.body?.bookmark?.url) {
             return res.status(400).json({ message: "missing URL" });
         }
+        if (!this.isValidUrl(req.body.bookmark.url)) {
+            return res.status(400).json({ message: "invalid URL provided" });
+        }
         const { url, title } = req.body.bookmark;
         // Save bookmark
         const bookmark = await this.bookmarksService.addBookmark(url, title);
@@ -29,4 +33,14 @@ export default class BookmarksHandler {
         // Return in the appropriate format
         return res.status(200).send({ bookmark });
     };
+
+    private isValidUrl(url: string): boolean {
+        try {
+            new URL(url);
+        }
+        catch (err) {
+            return false;
+        }
+        return true;
+    }
 };
