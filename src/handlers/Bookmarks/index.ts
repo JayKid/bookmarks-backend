@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { BookmarkAlreadyExistsError, BookmarkError } from "../../errors";
 import BookmarksService from "../../services/Bookmarks";
 
 export default class BookmarksHandler {
@@ -13,6 +14,9 @@ export default class BookmarksHandler {
         // Get bookmarks through the service
         const bookmarks = await this.bookmarksService.getBookmarks();
         // Deal with errors if any
+        if (bookmarks instanceof BookmarkError) {
+            return res.status(500).json({ message: bookmarks.errorMessage });
+        }
         // Return in the appropriate format
         return res.status(200).json({ bookmarks });
     };
@@ -29,8 +33,11 @@ export default class BookmarksHandler {
         // Save bookmark
         const bookmark = await this.bookmarksService.addBookmark(url, title);
         // Deal with errors if needed
-        if (bookmark instanceof Error) {
-            return res.status(400).json({ message: bookmark.message });
+        if (bookmark instanceof BookmarkAlreadyExistsError) {
+            return res.status(400).json({ message: bookmark.errorMessage });
+        }
+        if (bookmark instanceof BookmarkError) {
+            return res.status(500).json({ message: bookmark.errorMessage });
         }
         // Return in the appropriate format
         return res.status(200).send({ bookmark });
