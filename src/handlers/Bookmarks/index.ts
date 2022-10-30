@@ -1,4 +1,3 @@
-import { BlobOptions } from "buffer";
 import { Request, Response } from "express";
 import BookmarksService from "../../services/Bookmarks";
 
