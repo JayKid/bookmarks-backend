@@ -12,6 +12,8 @@ After looking around and not being convinced with any of the existing OSS soluti
 
 ### Database
 
+#### Running
+
 + `docker-compose up` will spin up a PostgreSQL instance and an `adminer` frontend to easily interact with it via UI.
 
 You can access this UI via `http://localhost:8080` and the DB on the default PostgreSQL port `5432`
@@ -19,6 +21,10 @@ You can access this UI via `http://localhost:8080` and the DB on the default Pos
 All credentials for the database are by now hardcoded in `docker-compose.yaml`. You will need these values in your `.env` file too. 
 
 In order to create and populate your own `.env` file, duplicate the `.env-example` file present at the root of the repo and replace the DB variables with your desired values.
+
+#### Seeding and running migrations
+
++ `npm run migrate` will seed the database and run all existing migrations. You will need to run this command the first time you are running the database.
 
 ### Application server
 
