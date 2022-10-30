@@ -10,4 +10,9 @@ export default class BookmarksService {
     public getBookmarks = async () => {
         return await this.bookmarksStore.getBookmarks();
     };
+
+    public addBookmark = async (url: string, title: string) => {
+        const bookmark = this.bookmarksStore.addBookmark({ url, title });
+        return bookmark;
+    }
 };
