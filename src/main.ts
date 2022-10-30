@@ -18,7 +18,7 @@ const database = KnexFactory({
     client: "pg",
     connection: appConfig.knex,
     migrations: {
-        tableName: 'migrations'
+        tableName: 'knex_migrations'
     }
 });
 
