@@ -1,4 +1,3 @@
-import BookmarksHandler from "../../handlers/Bookmarks";
 import BookmarksStore from "../../stores/Bookmarks";
 
 export default class BookmarksService {
