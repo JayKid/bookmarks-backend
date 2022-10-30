@@ -14,13 +14,16 @@ const app = express();
 const SERVER_PORT = process.env.SERVER_PORT;
 
 // Initialize DB
-const knex = KnexFactory({
+const database = KnexFactory({
     client: "pg",
     connection: appConfig.knex,
+    migrations: {
+        tableName: 'migrations'
+    }
 });
 
 // Initialize stores
-const bookmarksStore = new BookmarksStore(knex);
+const bookmarksStore = new BookmarksStore(database);
 
 // Initialize services
 const bookmarksService = new BookmarksService(bookmarksStore);
