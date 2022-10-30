@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import BookmarksService from "../../services/bookmarks";
+import BookmarksService from "../../services/Bookmarks";
 
 export default class BookmarksHandler {
     private bookmarksService: BookmarksService;

@@ -2,9 +2,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { knex as KnexFactory } from "knex";
 
-import BookmarksHandler from "./handlers/bookmarks";
-import BookmarksService from './services/bookmarks';
-import BookmarksStore from './stores/bookmarks';
+import BookmarksHandler from './handlers/Bookmarks';
+import BookmarksService from './services/Bookmarks';
+import BookmarksStore from './stores/Bookmarks';
 import appConfig from '../config';
 
 dotenv.config();

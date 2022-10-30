@@ -1,4 +1,4 @@
-import BookmarksStore from "../../stores/bookmarks";
+import BookmarksStore from "../../stores/Bookmarks";
 
 export default class BookmarksService {
     private bookmarksStore;
