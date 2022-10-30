@@ -9,11 +9,24 @@ export default class BookmarksHandler {
     }
 
     public getBookmarks = async (req: Request, res: Response) => {
-        // Validate query params if needed
+        // Validate input if needed
         // Get bookmarks through the service
         const bookmarks = await this.bookmarksService.getBookmarks();
         // Deal with errors if any
         // Return in the appropriate format
-        return res.json({ bookmarks });
+        return res.status(200).json({ bookmarks });
+    };
+
+    public addBookmark = async (req: Request, res: Response) => {
+        // Validate input
+        if (!req.body?.bookmark?.url) {
+            return res.status(400).json({ message: "missing URL" });
+        }
+        const { url, title } = req.body.bookmark;
+        // Save bookmark
+        const bookmark = await this.bookmarksService.addBookmark(url, title);
+        // Deal with errors if any
+        // Return in the appropriate format
+        return res.status(200).send({ bookmark });
     };
 };

@@ -1,4 +1,5 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import { knex as KnexFactory } from "knex";
 
@@ -12,6 +13,7 @@ dotenv.config();
 // Initialize server
 const app = express();
 const SERVER_PORT = process.env.SERVER_PORT;
+app.use(bodyParser.json());
 
 // Initialize DB
 const database = KnexFactory({
@@ -33,6 +35,7 @@ const bookmarksHandler = new BookmarksHandler(bookmarksService);
 
 // Bind routes to handlers
 app.get('/bookmarks', bookmarksHandler.getBookmarks);
+app.post('/bookmark', bookmarksHandler.addBookmark);
 
 // Start server
 app.listen(SERVER_PORT, () => {
