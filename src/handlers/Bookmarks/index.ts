@@ -28,7 +28,10 @@ export default class BookmarksHandler {
         const { url, title } = req.body.bookmark;
         // Save bookmark
         const bookmark = await this.bookmarksService.addBookmark(url, title);
-        // Deal with errors if any
+        // Deal with errors if needed
+        if (bookmark instanceof Error) {
+            return res.status(400).json({ message: bookmark.message });
+        }
         // Return in the appropriate format
         return res.status(200).send({ bookmark });
     };

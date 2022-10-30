@@ -19,16 +19,24 @@ export default class BookmarksStore {
         return bookmarks;
     };
 
-    public addBookmark = async ({ url, title }: { url: string, title?: string }): Promise<Bookmark> => {
-        const bookmark = await this.getTable().insert({
-            id: uuidv4(),
-            url,
-            title,
-        }).returning('id');
-        return {
-            id: bookmark[0].id,
-            url,
-            title,
-        };
+    public addBookmark = async ({ url, title }: { url: string, title?: string }): Promise<Bookmark | Error> => {
+        try {
+            const bookmark = await this.getTable().insert({
+                id: uuidv4(),
+                url,
+                title,
+            }).returning('id');
+            return {
+                id: bookmark[0].id,
+                url,
+                title,
+            };
+        } catch (err) {
+            //@ts-ignore
+            if (err?.constraint === 'bookmarks_url_unique') {
+                return new Error("This URL already exists");
+            }
+            return new Error("There was an error saving the bookmark");
+        }
     };
 }
