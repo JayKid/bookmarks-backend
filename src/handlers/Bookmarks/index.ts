@@ -40,7 +40,7 @@ export default class BookmarksHandler {
             return res.status(500).json({ message: bookmark.errorMessage });
         }
         // Return in the appropriate format
-        return res.status(200).send({ bookmark });
+        return res.status(200).json({ bookmark });
     };
 
     private isValidUrl(url: string): boolean {
