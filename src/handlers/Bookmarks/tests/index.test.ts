@@ -38,8 +38,7 @@ test('getBookmarks should call return an error when something went wrong', async
         status: statusMocked
     };
 
-    const errorMessage = "foo";
-    const bookmarkError = new BookmarkError(errorMessage)
+    const bookmarkError = new BookmarkError();
 
     // @ts-ignore
     bookmarksService.getBookmarks = jest.fn().mockReturnValue(bookmarkError);
@@ -49,7 +48,7 @@ test('getBookmarks should call return an error when something went wrong', async
     // @ts-ignore
     expect(bookmarksService.getBookmarks).toHaveBeenCalled();
     expect(statusMocked).toHaveBeenCalledWith(500);
-    expect(jsonMocked).toHaveBeenCalledWith({ message: errorMessage });
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-fetch-error");
 });
 
 test('addBookmark should return an error when no URL is provided', async () => {

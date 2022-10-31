@@ -15,7 +15,9 @@ export default class BookmarksHandler {
         const bookmarks = await this.bookmarksService.getBookmarks();
         // Deal with errors if any
         if (bookmarks instanceof BookmarkError) {
-            return res.status(500).json({ message: bookmarks.errorMessage });
+            return res.status(500).json({
+                error: { type: "bookmark-fetch-error", message: bookmarks.errorMessage }
+            });
         }
         // Return in the appropriate format
         return res.status(200).json({ bookmarks });
