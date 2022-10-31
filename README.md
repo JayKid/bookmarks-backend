@@ -29,3 +29,5 @@ In order to create and populate your own `.env` file, duplicate the `.env-exampl
 ### Application server
 
 + `npm start` will give you a nodemon process watching the TS files and running the node server on the port specified by `SERVER_PORT` on your `.env` file.
+
++ `npm run test` will run the Jest tests available.
