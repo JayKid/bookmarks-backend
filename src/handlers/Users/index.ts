@@ -15,6 +15,15 @@ export default class UsersHandler {
     }
 
     public signup = async (req: Request, res: Response) => {
+        // Check ENV gate
+        if (!process.env.SIGNUPS_ENABLED || process.env.SIGNUPS_ENABLED === "false") {
+            return res.status(403).json({
+                error: {
+                    type: "signups-disabled",
+                    message: "Signups are disabled"
+                }
+            });
+        }
         // Validate input
         if (!req.body?.email) {
             return res.status(400).json({
