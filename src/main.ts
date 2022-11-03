@@ -51,7 +51,6 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
 }));
-app.use(passport.authenticate('session'));
 
 passport.use(new LocalStrategy({
     usernameField: "email",
@@ -74,8 +73,10 @@ passport.deserializeUser((user: any, done) => {
 // Bind routes to handlers
 app.post('/login', usersHandler.login);
 app.post('/signup', usersHandler.signup);
-app.get('/bookmarks', bookmarksHandler.getBookmarks);
-app.post('/bookmark', bookmarksHandler.addBookmark);
+app.post('/logout', passport.authenticate('session'), usersHandler.verifyLoggedIn, usersHandler.logout);
+
+app.get('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.getBookmarks);
+app.post('/bookmark', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
 
 // Start server
 app.listen(SERVER_PORT, () => {

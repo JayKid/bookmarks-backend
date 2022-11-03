@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { PassportStatic } from "passport";
 import { HashingError, UserAlreadyExistsError, UserError } from "../../errors";
 
@@ -113,14 +113,35 @@ export default class UsersHandler {
         })(req, res);
     }
 
-    private isValidEmail(email: string): boolean {
-        return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
+    public logout = (req: Request, res: Response) => {
+        req.logout(function (err) {
+            if (err) {
+                return res.sendStatus(400);
+            }
+            return res.sendStatus(200);
+        });
     }
 
-    private isValidPassword(password: string): boolean {
-        if (password.length < 8) {
-            return false
+    public verifyLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
+        if (!req.user) {
+            return res.status(400).json({
+                error: {
+                    type: "not-logged-in",
+                    message: "Missing or wrong credentials provided"
+                }
+            });
         }
-        return true;
+        return next();
     }
+
+    private isValidEmail(email: string): boolean {
+    return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
+}
+
+    private isValidPassword(password: string): boolean {
+    if (password.length < 8) {
+        return false
+    }
+    return true;
+}
 }
