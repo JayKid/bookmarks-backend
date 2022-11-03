@@ -61,8 +61,6 @@ export default class UsersHandler {
         // Create user
         const { email, password } = req.body;
         const user = await this.userService.signup(email, password);
-        console.log("user coming back from service");
-        console.log({ user });
 
         // Deal with errors if needed
         if (user instanceof HashingError) {

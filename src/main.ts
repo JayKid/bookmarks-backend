@@ -43,7 +43,7 @@ const app = express();
 const SERVER_PORT = process.env.SERVER_PORT;
 app.use(bodyParser.json());
 if (!process.env.SESSION_SECRET) {
-    console.log("Please provide a session secret via the .env file");
+    console.error("Please provide a session secret via the .env file");
     exit(1);
 }
 app.use(session({
