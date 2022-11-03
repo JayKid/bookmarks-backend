@@ -21,3 +21,30 @@ export class BookmarkAlreadyExistsError extends CustomError {
         this.errorMessage = args[0];
     }
 };
+
+export class HashingError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, HashingError);
+        this.type = "hashing-error";
+        this.errorMessage = args[0];
+    }
+};
+
+export class UserAlreadyExistsError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, UserAlreadyExistsError);
+        this.type = "hashing-error";
+        this.errorMessage = args[0];
+    }
+};
+
+export class UserError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, UserError);
+        this.type = "hashing-error";
+        this.errorMessage = args[0];
+    }
+};
