@@ -135,13 +135,14 @@ export default class UsersHandler {
     }
 
     private isValidEmail(email: string): boolean {
-    return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
-}
+        // From MDN: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/email#basic_validation
+        return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email);
+    }
 
     private isValidPassword(password: string): boolean {
-    if (password.length < 8) {
-        return false
+        if (password.length < 8) {
+            return false
+        }
+        return true;
     }
-    return true;
-}
 }
