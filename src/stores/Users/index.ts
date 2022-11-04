@@ -38,13 +38,11 @@ export default class UsersStore {
 
     public getUserByEmail = async (email: string): Promise<User | UserError> => {
         try {
-            const result = this.getTable().where('email', email);
-            // @ts-ignore
-            if (result.length !== 1) {
+            const result = await this.getTable().where('email', email).first();
+            if (!result) {
                 return new UserError("There was an error retrieving the user");
             }
-            // @ts-ignore
-            return result[0];
+            return result;
         }
         catch (err) {
             return new UserError("There was an error retrieving the user");
