@@ -6,6 +6,7 @@ exports.up = function (knex: Knex) {
     table.uuid("id").primary();
     table.string("url").notNullable().unique();
     table.string("title");
+    table.uuid("user_id").references("id").inTable("users").index().notNullable();
     table.timestamps(true, true);
   });
 };
