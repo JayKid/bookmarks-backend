@@ -5,8 +5,8 @@ exports.up = function (knex: Knex) {
   return knex.schema.createTable(tableName, (table) => {
     table.uuid("id").primary();
     table.string("email").notNullable().unique();
-    table.string("hashed_password").notNullable();
-    table.string("salt").notNullable();
+    table.text("hashed_password").notNullable();
+    table.text("salt").notNullable();
     table.timestamps(true, true);
   });
 };
