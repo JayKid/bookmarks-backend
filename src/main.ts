@@ -51,17 +51,22 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
 }));
+app.use(passport.authenticate('session'));
 
 passport.use(new LocalStrategy({
     usernameField: "email",
     passwordField: "password",
-}, (email, password, cb) => {
-    const user = usersService.getUserByEmail(email, password);
+}, async (email, password, cb) => {
+    const user = await usersService.getUserByEmail(email, password);
     if (user instanceof Error) {
         return cb(user);
     }
-    cb(null, user);
+    cb(null, {
+        id: user.id,
+        email: user.email
+    });
 }));
+
 passport.serializeUser((user, done) => {
     done(undefined, user);
 });
