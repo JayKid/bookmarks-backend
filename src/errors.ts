@@ -44,7 +44,7 @@ export class UserError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);
         Error.captureStackTrace(this, UserError);
-        this.type = "hashing-error";
+        this.type = "user-error";
         this.errorMessage = args[0];
     }
 };
