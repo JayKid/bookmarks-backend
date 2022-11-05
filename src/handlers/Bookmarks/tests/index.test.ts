@@ -1,10 +1,19 @@
 import BookmarksHandler from '../index';
 import BookmarksService from '../../../services/Bookmarks';
 import { BookmarkAlreadyExistsError, BookmarkError } from '../../../errors';
+import { randomUUID } from 'crypto';
 
 let bookmarksHandler: BookmarksHandler;
 // @ts-ignore
 let bookmarksService;
+
+const getMockedUser = () => {
+    return {
+        user: {
+            id: randomUUID(),
+        }
+    }
+};
 
 beforeEach(() => {
     bookmarksService = jest.mocked(BookmarksService, { shallow: false });
@@ -17,7 +26,9 @@ beforeEach(() => {
 test('getBookmarks should call the service', async () => {
     let jsonMocked = jest.fn();
     let statusMocked = jest.fn(() => ({ json: jsonMocked }));
-    let request: any = {};
+    let request: any = {
+        ...getMockedUser()
+    };
     let response: any = {
         status: statusMocked
     };
@@ -33,7 +44,9 @@ test('getBookmarks should call the service', async () => {
 test('getBookmarks should call return an error when something went wrong', async () => {
     let jsonMocked = jest.fn();
     let statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
-    let request: any = {};
+    let request: any = {
+        ...getMockedUser()
+    };
     let response: any = {
         status: statusMocked
     };
@@ -55,6 +68,7 @@ test('addBookmark should return an error when no URL is provided', async () => {
     let jsonMocked = jest.fn();
     let statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
     let request: any = {
+        ...getMockedUser(),
         body: {}
     };
     let response: any = {
@@ -76,6 +90,7 @@ test('addBookmark should return an error when provided an invalid URL', async ()
     let jsonMocked = jest.fn();
     let statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
     let request: any = {
+        ...getMockedUser(),
         body: {
             url: "notAValidURL"
         }
@@ -95,6 +110,7 @@ test('addBookmark should call the service with the right parameters and return t
     let jsonMocked = jest.fn();
     let statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
     let request: any = {
+        ...getMockedUser(),
         body: {
             url: "https://www.wikipedia.org/",
             title: "Wikipedia"
@@ -119,6 +135,7 @@ test('addBookmark should return an error when the bookmark already exists', asyn
     let jsonMocked = jest.fn();
     let statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
     let request: any = {
+        ...getMockedUser(),
         body: {
             url: "https://www.wikipedia.org/",
         }
@@ -142,6 +159,7 @@ test('addBookmark should handle an unknown error when creating the bookmark', as
     let jsonMocked = jest.fn();
     let statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
     let request: any = {
+        ...getMockedUser(),
         body: {
             url: "https://www.wikipedia.org/",
         }
