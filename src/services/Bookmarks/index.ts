@@ -15,4 +15,4 @@ export default class BookmarksService {
         const bookmark = this.bookmarksStore.addBookmark({ url, title, userId });
         return bookmark;
     }
-};
+}

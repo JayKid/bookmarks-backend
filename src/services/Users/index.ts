@@ -37,4 +37,4 @@ export default class UsersService {
         }
         return userRow;
     }
-};
+}

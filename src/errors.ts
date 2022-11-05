@@ -1,7 +1,7 @@
 export class CustomError extends Error {
     public type = "";
     public errorMessage = "";
-};
+}
 
 
 export class BookmarkError extends CustomError {
@@ -20,7 +20,7 @@ export class BookmarkAlreadyExistsError extends CustomError {
         this.type = "bookmark_already_exists";
         this.errorMessage = args[0];
     }
-};
+}
 
 export class HashingError extends CustomError {
     public constructor(...args: any[]) {
@@ -29,7 +29,7 @@ export class HashingError extends CustomError {
         this.type = "hashing-error";
         this.errorMessage = args[0];
     }
-};
+}
 
 export class UserAlreadyExistsError extends CustomError {
     public constructor(...args: any[]) {
@@ -38,7 +38,7 @@ export class UserAlreadyExistsError extends CustomError {
         this.type = "hashing-error";
         this.errorMessage = args[0];
     }
-};
+}
 
 export class UserError extends CustomError {
     public constructor(...args: any[]) {
@@ -47,4 +47,4 @@ export class UserError extends CustomError {
         this.type = "user-error";
         this.errorMessage = args[0];
     }
-};
+}
