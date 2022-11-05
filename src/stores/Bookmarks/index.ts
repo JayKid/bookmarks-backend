@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 import { Bookmark } from "../../interfaces/Bookmark";
-import { v4 as uuidv4 } from "uuid";
 import { BookmarkAlreadyExistsError, BookmarkError } from "../../errors";
+import { randomUUID } from "crypto";
 
 export default class BookmarksStore {
     private database: Knex;
@@ -15,26 +15,28 @@ export default class BookmarksStore {
         return this.database<Bookmark, Bookmark[]>(this.TABLE_NAME);
     }
 
-    public getBookmarks = async (): Promise<Bookmark[] | BookmarkError> => {
+    public getBookmarks = async (userId: string): Promise<Bookmark[] | BookmarkError> => {
         try {
-            return await this.getTable().orderBy("created_at", "desc");
+            return await this.getTable().where('user_id', userId).orderBy("created_at", "desc");
         }
         catch (err) {
             return new BookmarkError("There was an error retrieving the bookmarks");
         }
     };
 
-    public addBookmark = async ({ url, title }: { url: string, title?: string }): Promise<Bookmark | BookmarkAlreadyExistsError | BookmarkError> => {
+    public addBookmark = async ({ url, title, userId }: { url: string, title?: string, userId: string }): Promise<Bookmark | BookmarkAlreadyExistsError | BookmarkError> => {
         try {
             const bookmark = await this.getTable().insert({
-                id: uuidv4(),
+                id: randomUUID(),
                 url,
                 title,
+                user_id: userId
             }).returning('id');
             return {
                 id: bookmark[0].id,
                 url,
                 title,
+                user_id: userId
             };
         } catch (err) {
             //@ts-ignore

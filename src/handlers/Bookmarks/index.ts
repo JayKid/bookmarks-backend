@@ -12,7 +12,8 @@ export default class BookmarksHandler {
     public getBookmarks = async (req: Request, res: Response) => {
         // Validate input if needed
         // Get bookmarks through the service
-        const bookmarks = await this.bookmarksService.getBookmarks();
+        // @ts-ignore because user is guaranteed by the middleware
+        const bookmarks = await this.bookmarksService.getBookmarks(req.user.id);
         // Deal with errors if any
         if (bookmarks instanceof BookmarkError) {
             return res.status(500).json({
@@ -43,7 +44,8 @@ export default class BookmarksHandler {
         }
         const { url, title } = req.body;
         // Save bookmark
-        const bookmark = await this.bookmarksService.addBookmark(url, title);
+        // @ts-ignore because user is guaranteed by the middleware
+        const bookmark = await this.bookmarksService.addBookmark({ url, title, userId: req.user.id });
         // Deal with errors if needed
         if (bookmark instanceof BookmarkAlreadyExistsError) {
             return res.status(400).json({
