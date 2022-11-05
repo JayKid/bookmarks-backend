@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 import { Bookmark } from "../../interfaces/Bookmark";
-import { v4 as uuidv4 } from "uuid";
 import { BookmarkAlreadyExistsError, BookmarkError } from "../../errors";
+import { randomUUID } from "crypto";
 
 export default class BookmarksStore {
     private database: Knex;
@@ -27,7 +27,7 @@ export default class BookmarksStore {
     public addBookmark = async ({ url, title, userId }: { url: string, title?: string, userId: string }): Promise<Bookmark | BookmarkAlreadyExistsError | BookmarkError> => {
         try {
             const bookmark = await this.getTable().insert({
-                id: uuidv4(),
+                id: randomUUID(),
                 url,
                 title,
                 user_id: userId

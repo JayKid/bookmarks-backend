@@ -2,6 +2,7 @@ import { Knex } from "knex";
 import { User } from "../../interfaces/User";
 import { v4 as uuidv4 } from "uuid";
 import { UserAlreadyExistsError, UserError } from "../../errors";
+import { randomUUID } from "crypto";
 
 export default class UsersStore {
     private database: Knex;
@@ -18,7 +19,7 @@ export default class UsersStore {
     public signup = async ({ email, hashedPassword, salt }: { email: string, hashedPassword: string, salt: string }) => {
         try {
             const user = await this.getTable().insert({
-                id: uuidv4(),
+                id: randomUUID(),
                 email,
                 hashed_password: hashedPassword,
                 salt,
