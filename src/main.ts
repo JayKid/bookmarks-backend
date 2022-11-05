@@ -71,7 +71,7 @@ passport.serializeUser((user, done) => {
     done(undefined, user);
 });
 
-passport.deserializeUser((user: any, done) => {
+passport.deserializeUser((user: { id: string, email: string }, done) => {
     done(undefined, user);
 });
 
