@@ -1,6 +1,5 @@
 import { Knex } from "knex";
 import { User } from "../../interfaces/User";
-import { v4 as uuidv4 } from "uuid";
 import { UserAlreadyExistsError, UserError } from "../../errors";
 import { randomUUID } from "crypto";
 
