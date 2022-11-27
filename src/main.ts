@@ -13,6 +13,9 @@ import appConfig from '../config';
 import UsersStore from './stores/Users';
 import UsersService from './services/Users';
 import UsersHandler from './handlers/Users';
+import LabelsStore from './stores/Labels';
+import LabelsService from './services/Labels';
+import LabelsHandler from './handlers/Labels';
 import { exit } from 'process';
 
 dotenv.config();
@@ -29,14 +32,17 @@ const database = KnexFactory({
 // Initialize stores
 const usersStore = new UsersStore(database);
 const bookmarksStore = new BookmarksStore(database);
+const labelsStore = new LabelsStore(database);
 
 // Initialize services
 const usersService = new UsersService(usersStore);
 const bookmarksService = new BookmarksService(bookmarksStore);
+const labelsService = new LabelsService(labelsStore);
 
 // Initialize handlers
 const usersHandler = new UsersHandler(usersService, passport);
 const bookmarksHandler = new BookmarksHandler(bookmarksService);
+const labelsHandler = new LabelsHandler(labelsService);
 
 // Initialize server
 const app = express();
@@ -82,6 +88,9 @@ app.post('/logout', passport.authenticate('session'), usersHandler.verifyLoggedI
 
 app.get('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.getBookmarks);
 app.post('/bookmark', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
+
+app.get('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.getLabels);
+app.post('/label', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.createLabel);
 
 // Start server
 app.listen(SERVER_PORT, () => {

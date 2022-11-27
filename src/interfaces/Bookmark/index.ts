@@ -3,4 +3,5 @@ export type Bookmark = {
     url: string;
     title?: string;
     user_id: string;
+    labels?: string[];
 };

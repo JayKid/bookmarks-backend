@@ -48,3 +48,12 @@ export class UserError extends CustomError {
         this.errorMessage = args[0];
     }
 }
+
+export class LabelError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, LabelError);
+        this.type = "label-error";
+        this.errorMessage = args[0];
+    }
+}
