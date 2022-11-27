@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { LabelError } from "../../errors";
+import { LabelDoesNotExistError, LabelError } from "../../errors";
 import LabelsService from "../../services/Labels";
 
 export default class LabelsHandler {
@@ -50,4 +50,39 @@ export default class LabelsHandler {
         // Return in the appropriate format
         return res.status(200).json({ label });
     };
+
+    public deleteLabel = async (req: Request, res: Response) => {
+        // Validate input
+        if (!req.params?.labelId) {
+            return res.status(400).json({
+                error: {
+                    type: "missing-label-id",
+                    message: "missing label ID"
+                }
+            });
+        }
+        const { labelId } = req.params;
+        // Delete label
+        // @ts-ignore because user is guaranteed by the middleware
+        const label = await this.labelsService.deleteLabel({ labelId, userId: req.user.id });
+        // Deal with errors if needed
+        if (label instanceof LabelDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: label.type,
+                    message: label.errorMessage,
+                }
+            });
+        }
+        if (label instanceof LabelError) {
+            return res.status(500).json({
+                error: {
+                    type: "label-error",
+                    message: label.errorMessage,
+                }
+            });
+        }
+        // Return in the appropriate format
+        return res.status(200).json({ labelId });
+    }
 }

@@ -57,3 +57,12 @@ export class LabelError extends CustomError {
         this.errorMessage = args[0];
     }
 }
+
+export class LabelDoesNotExistError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, LabelDoesNotExistError);
+        this.type = "label-not-exists";
+        this.errorMessage = args[0];
+    }
+}

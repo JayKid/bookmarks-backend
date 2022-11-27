@@ -15,4 +15,9 @@ export default class LabelsService {
         const label = this.labelsStore.createLabel({ name, userId });
         return label;
     }
+
+    public deleteLabel = async ({ labelId, userId }: { labelId: string, userId: string }) => {
+        const label = this.labelsStore.deleteLabel(labelId, userId);
+        return label;
+    }
 }

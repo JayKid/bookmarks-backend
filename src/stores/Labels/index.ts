@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 import { randomUUID } from "crypto";
 import { Label } from "../../interfaces/Label";
-import { LabelError } from "../../errors";
+import { LabelDoesNotExistError, LabelError } from "../../errors";
 
 export default class LabelsStore {
     private database: Knex;
@@ -41,4 +41,20 @@ export default class LabelsStore {
             return new LabelError("There was an error creating the label");
         }
     };
+
+    public deleteLabel = async (labelId: string, userId: string): Promise<true | LabelError> => {
+        try {
+            const deletionResult = await this.getTable().where('user_id', userId).andWhere('id', labelId).delete();
+            if (deletionResult === 0) {
+                return new LabelDoesNotExistError(`A label with id: ${labelId} does not exist`);
+            }
+            if (deletionResult === 1) {
+                return true;
+            }
+            return new LabelError("There was an error creating the label");
+        } catch (err) {
+            //@ts-ignore
+            return new LabelError("There was an error creating the label");
+        }
+    }
 }

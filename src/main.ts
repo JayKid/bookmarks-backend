@@ -91,6 +91,7 @@ app.post('/bookmark', passport.authenticate('session'), usersHandler.verifyLogge
 
 app.get('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.getLabels);
 app.post('/label', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.createLabel);
+app.delete('/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.deleteLabel);
 
 // Start server
 app.listen(SERVER_PORT, () => {
