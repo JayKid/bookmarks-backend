@@ -5,6 +5,7 @@ exports.up = function (knex: Knex) {
   return knex.schema.createTable(tableName, (table) => {
     table.uuid("id").primary();
     table.string("name").notNullable();
+    table.uuid("user_id").references("id").inTable("users").index().notNullable();
     table.timestamps(true, true);
   });
 };
