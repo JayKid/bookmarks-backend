@@ -87,10 +87,10 @@ app.post('/signup', usersHandler.signup);
 app.post('/logout', passport.authenticate('session'), usersHandler.verifyLoggedIn, usersHandler.logout);
 
 app.get('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.getBookmarks);
-app.post('/bookmark', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
+app.post('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
 
 app.get('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.getLabels);
-app.post('/label', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.createLabel);
+app.post('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.createLabel);
 app.delete('/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.deleteLabel);
 
 // Start server
