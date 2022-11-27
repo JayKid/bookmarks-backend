@@ -3,6 +3,17 @@ import { Bookmark } from "../../interfaces/Bookmark";
 import { BookmarkAlreadyExistsError, BookmarkError } from "../../errors";
 import { randomUUID } from "crypto";
 
+type BookmarkWithOptionalLabelRow = {
+    id: string;
+    url: string;
+    title?: string;
+    user_id: string;
+    created_at: Date;
+    updated_at: Date;
+    label_name: string;
+    label_id: string;
+}
+
 export default class BookmarksStore {
     private database: Knex;
     private readonly TABLE_NAME = "bookmarks";
@@ -17,7 +28,46 @@ export default class BookmarksStore {
 
     public getBookmarks = async (userId: string): Promise<Bookmark[] | BookmarkError> => {
         try {
-            return await this.getTable().where('user_id', userId).orderBy("created_at", "desc");
+            const result = await this.database.raw(`SELECT b.id, b.url, b.title, b.user_id, b.created_at, b.updated_at, l.id as label_id, l.name as label_name
+            FROM bookmarks b
+            LEFT JOIN labels_bookmarks lb
+            ON lb.bookmark_id = b.id
+            LEFT JOIN labels l
+            ON l.id = lb.label_id
+            WHERE b.user_id = ?`, userId);
+
+            // { [bookmarkId]: { bookmark_id, bookmark_url, bookmark_title, labels: [{ id: name }]} }
+            const bookmarksWithLabels = {} as any;
+            if (result.rows) {
+                result.rows.forEach((bookmarkWithLabelRow: BookmarkWithOptionalLabelRow) => {
+
+                    if (!bookmarksWithLabels[bookmarkWithLabelRow.id]) {
+                        const hasLabel = !!bookmarkWithLabelRow.label_id;
+
+                        bookmarksWithLabels[bookmarkWithLabelRow.id] = {
+                            id: bookmarkWithLabelRow.id,
+                            url: bookmarkWithLabelRow.url,
+                            title: bookmarkWithLabelRow.title,
+                            created_at: bookmarkWithLabelRow.created_at,
+                            updated_at: bookmarkWithLabelRow.updated_at,
+                        }
+                        if (hasLabel) {
+                            bookmarksWithLabels[bookmarkWithLabelRow.id].labels = [{ id: bookmarkWithLabelRow.label_id, name: bookmarkWithLabelRow.label_name }]
+                        }
+                    }
+                    else {
+                        const newLabel = { id: bookmarkWithLabelRow.label_id, name: bookmarkWithLabelRow.label_name };
+                        if (!bookmarksWithLabels[bookmarkWithLabelRow.id].labels.includes(newLabel)) {
+                            bookmarksWithLabels[bookmarkWithLabelRow.id].labels.push(newLabel);
+                        }
+                    }
+
+                });
+                return Object.values(bookmarksWithLabels);
+            }
+
+            return new BookmarkError("Foo");
+
         }
         catch (err) {
             return new BookmarkError("There was an error retrieving the bookmarks");
