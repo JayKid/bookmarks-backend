@@ -4,8 +4,8 @@ const tableName = "labels_bookmarks";
 exports.up = async (knex: Knex) => {
   await knex.schema.createTable(tableName, (table) => {
     table.uuid("id").primary(); // unnecessary?
-    table.uuid("bookmark_id").references("id").inTable("bookmarks").index().notNullable();
-    table.uuid("label_id").references("id").inTable("labels").index().notNullable();
+    table.uuid("bookmark_id").references("id").inTable("bookmarks").index().notNullable().onDelete('CASCADE');
+    table.uuid("label_id").references("id").inTable("labels").index().notNullable().onDelete('CASCADE');
     table.timestamps(true, true);
   });
 
