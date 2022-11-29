@@ -22,6 +22,24 @@ export class BookmarkAlreadyExistsError extends CustomError {
     }
 }
 
+export class BookmarkAlreadyHasLabel extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, BookmarkAlreadyHasLabel);
+        this.type = "bookmark_already_has_label";
+        this.errorMessage = args[0];
+    }
+}
+
+export class BookmarkLabelError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, BookmarkLabelError);
+        this.type = "bookmark_label_error";
+        this.errorMessage = args[0];
+    }
+}
+
 export class HashingError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);

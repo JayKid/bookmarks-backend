@@ -20,4 +20,8 @@ export default class LabelsService {
         const label = this.labelsStore.deleteLabel(labelId, userId);
         return label;
     }
+
+    public isOwner = async ({ labelId, userId }: { labelId: string, userId: string }) => {
+        return await this.labelsStore.isOwner({ labelId, userId });
+    }
 }

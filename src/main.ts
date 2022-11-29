@@ -41,7 +41,7 @@ const labelsService = new LabelsService(labelsStore);
 
 // Initialize handlers
 const usersHandler = new UsersHandler(usersService, passport);
-const bookmarksHandler = new BookmarksHandler(bookmarksService);
+const bookmarksHandler = new BookmarksHandler(bookmarksService, labelsService);
 const labelsHandler = new LabelsHandler(labelsService);
 
 // Initialize server
@@ -88,6 +88,7 @@ app.post('/logout', passport.authenticate('session'), usersHandler.verifyLoggedI
 
 app.get('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.getBookmarks);
 app.post('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
+app.post('/bookmarks/:bookmarkId/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addLabelToBookmark);
 
 app.get('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.getLabels);
 app.post('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.createLabel);

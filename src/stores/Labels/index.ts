@@ -57,4 +57,17 @@ export default class LabelsStore {
             return new LabelError("There was an error creating the label");
         }
     }
+
+    public isOwner = async ({ labelId, userId }: { labelId: string, userId: string }): Promise<true | false | LabelError> => {
+        try {
+            const result = await this.getTable().where('id', labelId).andWhere('user_id', userId).orderBy("created_at", "desc");
+            if (result.length !== 1) {
+                return false;
+            }
+            return true;
+
+        } catch (err) {
+            return new LabelError("An unexpected error occurred while retrieving the bookmark");
+        }
+    }
 }

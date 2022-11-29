@@ -1,7 +1,8 @@
 import { Knex } from "knex";
 import { Bookmark } from "../../interfaces/Bookmark";
-import { BookmarkAlreadyExistsError, BookmarkError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabel, BookmarkError, BookmarkLabelError } from "../../errors";
 import { randomUUID } from "crypto";
+import { LabelsBookmarks } from "../../interfaces/Bookmark/labelsbookmarks";
 
 type BookmarkWithOptionalLabelRow = {
     id: string;
@@ -17,6 +18,7 @@ type BookmarkWithOptionalLabelRow = {
 export default class BookmarksStore {
     private database: Knex;
     private readonly TABLE_NAME = "bookmarks";
+    private readonly LABELS_RELATIONAL_TABLE_NAME = "labels_bookmarks";
 
     public constructor(db: Knex) {
         this.database = db;
@@ -24,6 +26,10 @@ export default class BookmarksStore {
 
     private getTable(): Knex.QueryBuilder<Bookmark, Bookmark[]> {
         return this.database<Bookmark, Bookmark[]>(this.TABLE_NAME);
+    }
+
+    private getBookmarksLabelsTable(): Knex.QueryBuilder<LabelsBookmarks, LabelsBookmarks[]> {
+        return this.database<LabelsBookmarks, LabelsBookmarks[]>(this.LABELS_RELATIONAL_TABLE_NAME);
     }
 
     public getBookmarks = async (userId: string): Promise<Bookmark[] | BookmarkError> => {
@@ -96,4 +102,35 @@ export default class BookmarksStore {
             return new BookmarkError("There was an error saving the bookmark");
         }
     };
+
+    public addLabelToBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<true | BookmarkLabelError | BookmarkAlreadyExistsError> => {
+        try {
+            await this.getBookmarksLabelsTable().insert({
+                id: randomUUID(),
+                bookmark_id: bookmarkId,
+                label_id: labelId,
+            }).returning('id');
+
+            return true;
+        } catch (err) {
+            //@ts-ignore for err containing constraint
+            if (err?.constraint === 'labels_bookmarks_composite_index') {
+                return new BookmarkAlreadyHasLabel("This bookmark already has the label provided");
+            }
+            return new BookmarkLabelError("There was an error adding the label to the bookmark");
+        }
+    }
+
+    public isOwner = async ({ bookmarkId, userId }: { bookmarkId: string, userId: string }): Promise<true | false | BookmarkError> => {
+        try {
+            const result = await this.getTable().where('id', bookmarkId).andWhere('user_id', userId).orderBy("created_at", "desc");
+            if (result.length !== 1) {
+                return false;
+            }
+            return true;
+
+        } catch (err) {
+            return new BookmarkError("An unexpected error occurred while retrieving the bookmark");
+        }
+    }
 }
