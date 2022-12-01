@@ -83,6 +83,6 @@ export default class LabelsHandler {
             });
         }
         // Return in the appropriate format
-        return res.status(200).json({ labelId });
+        return res.status(200).send();
     }
 }
