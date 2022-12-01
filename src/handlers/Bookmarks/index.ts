@@ -13,10 +13,24 @@ export default class BookmarksHandler {
     }
 
     public getBookmarks = async (req: Request, res: Response) => {
-        // Validate input if needed
-        // Get bookmarks through the service
         // @ts-ignore because user is guaranteed by the middleware
-        const bookmarks = await this.bookmarksService.getBookmarks(req.user.id);
+        const userId = req.user.id;
+        // Validate input if needed
+        let labelId;
+        if (req.query.labelId) {
+            labelId = req.query.labelId as string;
+            if (!this.labelsService.isOwner({ labelId, userId })) {
+                return res.status(403).json({
+                    error: {
+                        type: "incorrect-label",
+                        message: "User does not own this label or it does not exist"
+                    }
+                });
+            }
+        }
+
+        // Get bookmarks through the service
+        const bookmarks = await this.bookmarksService.getBookmarks(userId, labelId);
         // Deal with errors if any
         if (bookmarks instanceof BookmarkError) {
             return res.status(500).json({

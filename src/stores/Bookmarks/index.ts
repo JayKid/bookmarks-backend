@@ -32,7 +32,7 @@ export default class BookmarksStore {
         return this.database<LabelsBookmarks, LabelsBookmarks[]>(this.LABELS_RELATIONAL_TABLE_NAME);
     }
 
-    public getBookmarks = async (userId: string): Promise<Bookmark[] | BookmarkError> => {
+    public getBookmarks = async (userId: string, labelId?: string): Promise<Bookmark[] | BookmarkError> => {
         try {
             const result = await this.database.raw(`SELECT b.id, b.url, b.title, b.user_id, b.created_at, b.updated_at, l.id as label_id, l.name as label_name
             FROM bookmarks b
@@ -69,10 +69,28 @@ export default class BookmarksStore {
                     }
 
                 });
-                return Object.values(bookmarksWithLabels);
+                const bookmarsWithLabels = Object.values(bookmarksWithLabels) as Bookmark[];
+
+                if (labelId) {
+                    const bookmarksFilteredByLabel = bookmarsWithLabels.filter((bookmark: Bookmark) => {
+                        if (bookmark?.labels) {
+                            let foundLabel = false;
+                            bookmark.labels.forEach(label => {
+                                if (label.id === labelId) {
+                                    foundLabel = true;
+                                }
+                            });
+                            return foundLabel;
+                        }
+                        return false;
+                    }) as any;
+
+                    return bookmarksFilteredByLabel;
+                }
+                return bookmarsWithLabels;
             }
 
-            return new BookmarkError("Foo");
+            return new BookmarkError("There was an error retrieving the bookmarks");
 
         }
         catch (err) {
