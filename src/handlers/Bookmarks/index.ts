@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabel, BookmarkError, BookmarkLabelError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabel, BookmarkError, BookmarkDoesNotHaveLabelError } from "../../errors";
 import BookmarksService from "../../services/Bookmarks";
 import LabelsService from "../../services/Labels";
 
@@ -124,6 +124,66 @@ export default class BookmarksHandler {
                 }
             });
         }
+        // Return in the appropriate format
+        return res.status(200).send();
+    }
+
+    public removeLabelFromBookmark = async (req: Request, res: Response) => {
+        // Validate input
+        if (!req.params?.bookmarkId) {
+            return res.status(400).json({
+                error: {
+                    type: "missing-bookmark-id",
+                    message: "missing bookmark ID"
+                }
+            });
+        }
+        if (!req.params?.labelId) {
+            return res.status(400).json({
+                error: {
+                    type: "missing-label-id",
+                    message: "missing label ID"
+                }
+            });
+        }
+
+        const { bookmarkId, labelId } = req.params;
+        // @ts-ignore because user is guaranteed by the middleware
+        const userId = req.user.id;
+
+        // Check ownership of both entities
+        const isBookmarkOwner = await this.bookmarksService.isOwner({ bookmarkId, userId });
+        if (!isBookmarkOwner) {
+            return res.status(403).json({
+                error: {
+                    type: "incorrect-bookmark",
+                    message: "User does not own this bookmark or it does not exist"
+                }
+            });
+        }
+        const isLabelOwner = await this.labelsService.isOwner({ labelId, userId });
+        if (!isLabelOwner) {
+            return res.status(403).json({
+                error: {
+                    type: "incorrect-label",
+                    message: "User does not own this label or it does not exist"
+                }
+            });
+        }
+
+        // Remove label from bookmark
+        // @ts-ignore because user is guaranteed by the middleware
+        const bookmark = await this.bookmarksService.removeLabelFromBookmark({ bookmarkId, labelId, userId });
+        // Deal with errors if needed
+        if (bookmark instanceof BookmarkDoesNotHaveLabelError) {
+            return res.status(404).json({
+                error: {
+                    type: bookmark.type,
+                    message: bookmark.errorMessage,
+                }
+            });
+        }
+
         // Return in the appropriate format
         return res.status(200).send();
     }

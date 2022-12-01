@@ -21,6 +21,11 @@ export default class BookmarksService {
         return bookmark;
     }
 
+    public removeLabelFromBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }) => {
+        const bookmark = this.bookmarksStore.removeLabelFromBookmark({ bookmarkId, labelId });
+        return bookmark;
+    }
+
     public isOwner = async ({ bookmarkId, userId }: { bookmarkId: string, userId: string }) => {
         return await this.bookmarksStore.isOwner({ bookmarkId, userId });
     }

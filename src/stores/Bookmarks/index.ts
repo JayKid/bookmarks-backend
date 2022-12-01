@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { Bookmark } from "../../interfaces/Bookmark";
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabel, BookmarkError, BookmarkLabelError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabel, BookmarkDoesNotHaveLabelError, BookmarkError, BookmarkLabelError } from "../../errors";
 import { randomUUID } from "crypto";
 import { LabelsBookmarks } from "../../interfaces/Bookmark/labelsbookmarks";
 
@@ -118,6 +118,21 @@ export default class BookmarksStore {
                 return new BookmarkAlreadyHasLabel("This bookmark already has the label provided");
             }
             return new BookmarkLabelError("There was an error adding the label to the bookmark");
+        }
+    }
+
+    public removeLabelFromBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<true | BookmarkLabelError | BookmarkAlreadyExistsError> => {
+        try {
+            const deletionResult = await this.getBookmarksLabelsTable().where('bookmark_id', bookmarkId).andWhere('label_id', labelId).delete();
+            if (deletionResult === 0) {
+                return new BookmarkDoesNotHaveLabelError(`The bookmark with ID: ${bookmarkId} does not have a label with ID: ${labelId}`);
+            }
+            if (deletionResult === 1) {
+                return true;
+            }
+            return new BookmarkLabelError("There was an error removing the label from the bookmark");
+        } catch (err) {
+            return new BookmarkLabelError("There was an error removing the label from the bookmark");
         }
     }
 

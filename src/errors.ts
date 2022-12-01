@@ -31,6 +31,15 @@ export class BookmarkAlreadyHasLabel extends CustomError {
     }
 }
 
+export class BookmarkDoesNotHaveLabelError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, BookmarkDoesNotHaveLabelError);
+        this.type = "bookmark_does_not_have_label";
+        this.errorMessage = args[0];
+    }
+}
+
 export class BookmarkLabelError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);
