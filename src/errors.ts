@@ -8,7 +8,7 @@ export class BookmarkError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);
         Error.captureStackTrace(this, BookmarkError);
-        this.type = "bookmark_error";
+        this.type = "bookmark-error";
         this.errorMessage = args[0];
     }
 }
@@ -17,16 +17,16 @@ export class BookmarkAlreadyExistsError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);
         Error.captureStackTrace(this, BookmarkAlreadyExistsError);
-        this.type = "bookmark_already_exists";
+        this.type = "bookmark-already-exists";
         this.errorMessage = args[0];
     }
 }
 
-export class BookmarkAlreadyHasLabel extends CustomError {
+export class BookmarkAlreadyHasLabelError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);
-        Error.captureStackTrace(this, BookmarkAlreadyHasLabel);
-        this.type = "bookmark_already_has_label";
+        Error.captureStackTrace(this, BookmarkAlreadyHasLabelError);
+        this.type = "bookmark-already-has-label";
         this.errorMessage = args[0];
     }
 }
@@ -35,7 +35,7 @@ export class BookmarkDoesNotHaveLabelError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);
         Error.captureStackTrace(this, BookmarkDoesNotHaveLabelError);
-        this.type = "bookmark_does_not_have_label";
+        this.type = "bookmark-does-not-have-label";
         this.errorMessage = args[0];
     }
 }
@@ -44,7 +44,7 @@ export class BookmarkLabelError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);
         Error.captureStackTrace(this, BookmarkLabelError);
-        this.type = "bookmark_label_error";
+        this.type = "bookmark-label-error";
         this.errorMessage = args[0];
     }
 }

@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { Bookmark } from "../../interfaces/Bookmark";
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabel, BookmarkDoesNotHaveLabelError, BookmarkError, BookmarkLabelError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkDoesNotHaveLabelError, BookmarkError, BookmarkLabelError } from "../../errors";
 import { randomUUID } from "crypto";
 import { LabelsBookmarks } from "../../interfaces/Bookmark/labelsbookmarks";
 
@@ -121,7 +121,7 @@ export default class BookmarksStore {
         }
     };
 
-    public addLabelToBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<true | BookmarkLabelError | BookmarkAlreadyExistsError> => {
+    public addLabelToBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<true | BookmarkLabelError | BookmarkAlreadyHasLabelError> => {
         try {
             await this.getBookmarksLabelsTable().insert({
                 id: randomUUID(),
@@ -133,7 +133,7 @@ export default class BookmarksStore {
         } catch (err) {
             //@ts-ignore for err containing constraint
             if (err?.constraint === 'labels_bookmarks_composite_index') {
-                return new BookmarkAlreadyHasLabel("This bookmark already has the label provided");
+                return new BookmarkAlreadyHasLabelError("This bookmark already has the label provided");
             }
             return new BookmarkLabelError("There was an error adding the label to the bookmark");
         }

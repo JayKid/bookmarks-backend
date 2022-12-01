@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabel, BookmarkError, BookmarkDoesNotHaveLabelError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError, BookmarkDoesNotHaveLabelError } from "../../errors";
 import BookmarksService from "../../services/Bookmarks";
 import LabelsService from "../../services/Labels";
 
@@ -130,8 +130,8 @@ export default class BookmarksHandler {
         // @ts-ignore because user is guaranteed by the middleware
         const bookmark = await this.bookmarksService.addLabelToBookmark({ bookmarkId, labelId, userId });
         // Deal with errors if needed
-        if (bookmark instanceof BookmarkAlreadyHasLabel) {
-            return res.status(500).json({
+        if (bookmark instanceof BookmarkAlreadyHasLabelError) {
+            return res.status(400).json({
                 error: {
                     type: bookmark.type,
                     message: bookmark.errorMessage,
