@@ -13,6 +13,9 @@ import appConfig from '../config';
 import UsersStore from './stores/Users';
 import UsersService from './services/Users';
 import UsersHandler from './handlers/Users';
+import LabelsStore from './stores/Labels';
+import LabelsService from './services/Labels';
+import LabelsHandler from './handlers/Labels';
 import { exit } from 'process';
 
 dotenv.config();
@@ -29,14 +32,17 @@ const database = KnexFactory({
 // Initialize stores
 const usersStore = new UsersStore(database);
 const bookmarksStore = new BookmarksStore(database);
+const labelsStore = new LabelsStore(database);
 
 // Initialize services
 const usersService = new UsersService(usersStore);
 const bookmarksService = new BookmarksService(bookmarksStore);
+const labelsService = new LabelsService(labelsStore);
 
 // Initialize handlers
 const usersHandler = new UsersHandler(usersService, passport);
-const bookmarksHandler = new BookmarksHandler(bookmarksService);
+const bookmarksHandler = new BookmarksHandler(bookmarksService, labelsService);
+const labelsHandler = new LabelsHandler(labelsService);
 
 // Initialize server
 const app = express();
@@ -81,7 +87,13 @@ app.post('/signup', usersHandler.signup);
 app.post('/logout', passport.authenticate('session'), usersHandler.verifyLoggedIn, usersHandler.logout);
 
 app.get('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.getBookmarks);
-app.post('/bookmark', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
+app.post('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
+app.post('/bookmarks/:bookmarkId/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addLabelToBookmark);
+app.delete('/bookmarks/:bookmarkId/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.removeLabelFromBookmark);
+
+app.get('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.getLabels);
+app.post('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.createLabel);
+app.delete('/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.deleteLabel);
 
 // Start server
 app.listen(SERVER_PORT, () => {
