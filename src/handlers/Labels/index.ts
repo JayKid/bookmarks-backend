@@ -42,7 +42,7 @@ export default class LabelsHandler {
         if (label instanceof LabelError) {
             return res.status(500).json({
                 error: {
-                    type: "label-error",
+                    type: "label-creation-error",
                     message: label.errorMessage,
                 }
             });

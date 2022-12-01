@@ -17,8 +17,8 @@ export default class BookmarksHandler {
         const userId = req.user.id;
         // Validate input if needed
         let labelId;
-        if (req.query.labelId) {
-            labelId = req.query.labelId as string;
+        if (req?.query?.labelId) {
+            labelId = req?.query?.labelId as string;
             if (!this.labelsService.isOwner({ labelId, userId })) {
                 return res.status(403).json({
                     error: {
