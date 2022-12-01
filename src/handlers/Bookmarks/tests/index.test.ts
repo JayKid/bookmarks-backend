@@ -1,7 +1,7 @@
 import BookmarksHandler from '../index';
 import BookmarksService from '../../../services/Bookmarks';
 import LabelsService from '../../../services/Labels';
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError } from '../../../errors';
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkDoesNotHaveLabelError, BookmarkError } from '../../../errors';
 import { randomUUID } from 'crypto';
 
 let bookmarksHandler: BookmarksHandler;
@@ -341,5 +341,167 @@ test('addLabelToBookmark should call the service with the right parameters and r
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(200);
     expect(mockedAddLabelToBookmark).toHaveBeenCalledWith({ bookmarkId: request.params.bookmarkId, labelId: request.params.labelId, userId: request.user.id });
+    expect(sendMocked).toHaveBeenCalled();
+});
+
+test('removeLabelFromBookmark should return an error when no bookmarkId is provided', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            labelId: randomUUID()
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    // @ts-ignore
+    bookmarksService.removeLabelFromBookmark = jest.fn();
+
+    // @ts-ignore
+    await bookmarksHandler.removeLabelFromBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(400);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("missing-bookmark-id");
+});
+
+test('removeLabelFromBookmark should return an error when no labelId is provided', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    // @ts-ignore
+    bookmarksService.removeLabelFromBookmark = jest.fn();
+
+    // @ts-ignore
+    await bookmarksHandler.removeLabelFromBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(400);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("missing-label-id");
+});
+
+test('removeLabelFromBookmark should return an error when the bookmark is not owned by the user or does not exist', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+            labelId: randomUUID(),
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    // @ts-ignore
+    bookmarksService.removeLabelFromBookmark = jest.fn();
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(false);
+
+    // @ts-ignore
+    await bookmarksHandler.removeLabelFromBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(403);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("incorrect-bookmark");
+});
+
+test('removeLabelFromBookmark should return an error when the label is not owned by the user or does not exist', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+            labelId: randomUUID(),
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    // @ts-ignore
+    bookmarksService.removeLabelFromBookmark = jest.fn();
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(true);
+    // @ts-ignore
+    labelsService.isOwner = jest.fn().mockReturnValue(false);
+
+    // @ts-ignore
+    await bookmarksHandler.removeLabelFromBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(403);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("incorrect-label");
+});
+
+test('removeLabelFromBookmark should return an error when the bookmark does not have the label', async () => {
+    const jsonMocked = jest.fn();
+    const sendMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked, send: sendMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+            labelId: randomUUID(),
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const returnValue = new BookmarkDoesNotHaveLabelError();
+    // @ts-ignore
+    bookmarksService.removeLabelFromBookmark = jest.fn().mockReturnValue(returnValue);
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(true);
+    // @ts-ignore
+    labelsService.isOwner = jest.fn().mockReturnValue(true);
+
+    // @ts-ignore
+    await bookmarksHandler.removeLabelFromBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(404);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-does-not-have-label");
+});
+
+test('removeLabelFromBookmark should call the service with the right parameters and return 200', async () => {
+    const jsonMocked = jest.fn();
+    const sendMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked, send: sendMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+            labelId: randomUUID(),
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const returnValue = {};
+    const mockedRemoveLabelFromBookmark = jest.fn().mockReturnValue(returnValue);
+    // @ts-ignore
+    bookmarksService.removeLabelFromBookmark = mockedRemoveLabelFromBookmark;
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(true);
+    // @ts-ignore
+    labelsService.isOwner = jest.fn().mockReturnValue(true);
+
+    // @ts-ignore
+    await bookmarksHandler.removeLabelFromBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(200);
+    expect(mockedRemoveLabelFromBookmark).toHaveBeenCalledWith({ bookmarkId: request.params.bookmarkId, labelId: request.params.labelId, userId: request.user.id });
     expect(sendMocked).toHaveBeenCalled();
 });
