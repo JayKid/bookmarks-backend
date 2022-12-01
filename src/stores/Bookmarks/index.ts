@@ -24,6 +24,7 @@ export default class BookmarksStore {
         this.database = db;
     }
 
+    // test comment
     private getTable(): Knex.QueryBuilder<Bookmark, Bookmark[]> {
         return this.database<Bookmark, Bookmark[]>(this.TABLE_NAME);
     }
