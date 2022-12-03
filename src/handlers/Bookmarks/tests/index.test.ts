@@ -1,7 +1,7 @@
 import BookmarksHandler from '../index';
 import BookmarksService from '../../../services/Bookmarks';
 import LabelsService from '../../../services/Labels';
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkDoesNotHaveLabelError, BookmarkError } from '../../../errors';
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkDoesNotExistError, BookmarkDoesNotHaveLabelError, BookmarkError } from '../../../errors';
 import { randomUUID } from 'crypto';
 
 let bookmarksHandler: BookmarksHandler;
@@ -181,6 +181,133 @@ test('addBookmark should handle an unknown error when creating the bookmark', as
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(500);
     expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-creation-error");
+});
+
+test('deleteBookmark should return an error when no bookmarkId is provided', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {}
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    // @ts-ignore
+    bookmarksService.deleteBookmark = jest.fn();
+
+    // @ts-ignore
+    await bookmarksHandler.deleteBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(400);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("missing-bookmark-id");
+});
+
+test('deleteBookmark should return an error when the bookmark does not exist', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID()
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const returnValue = new BookmarkDoesNotExistError()
+    // @ts-ignore
+    bookmarksService.deleteBookmark = jest.fn();
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(returnValue);
+
+    // @ts-ignore
+    await bookmarksHandler.deleteBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(404);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-does-not-exist");
+});
+
+test('deleteBookmark should return an error when the bookmark is not owned by the user', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID()
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    // @ts-ignore
+    bookmarksService.deleteBookmark = jest.fn();
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(false);
+
+    // @ts-ignore
+    await bookmarksHandler.deleteBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(403);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("forbidden-access-to-bookmark");
+});
+
+test('deleteBookmark should handle an unknown error when deleting the bookmark', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID()
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const returnValue = new BookmarkError();
+    // @ts-ignore
+    bookmarksService.deleteBookmark = jest.fn().mockReturnValue(returnValue);
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(true);
+
+    // @ts-ignore
+    await bookmarksHandler.deleteBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(500);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-error");
+});
+
+test('deleteBookmark should call the service with the right parameters and return the new bookmark', async () => {
+    const jsonMocked = jest.fn();
+    const sendMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked, send: sendMocked });
+
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID()
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const mockedDeleteBookmark = jest.fn().mockReturnValue(false);
+    // @ts-ignore
+    bookmarksService.deleteBookmark = mockedDeleteBookmark;
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(true);
+
+    // @ts-ignore
+    await bookmarksHandler.deleteBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(200);
+    expect(mockedDeleteBookmark).toHaveBeenCalledWith(request.params.bookmarkId);
+    expect(sendMocked).toHaveBeenCalled();
 });
 
 test('addLabelToBookmark should return an error when no bookmarkId is provided', async () => {
