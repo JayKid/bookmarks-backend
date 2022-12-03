@@ -13,5 +13,7 @@ jobs:
         run: npm install
       - name: Compile code
         run: npx tsc
+      - name: Clean compilation output
+        run: npx tsc --build --clean
       - name: Run tests 
         run: npm test
