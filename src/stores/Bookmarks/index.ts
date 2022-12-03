@@ -139,6 +139,7 @@ export default class BookmarksStore {
         }
     }
 
+    // comment
     public removeLabelFromBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<true | BookmarkLabelError | BookmarkAlreadyExistsError> => {
         try {
             const deletionResult = await this.getBookmarksLabelsTable().where('bookmark_id', bookmarkId).andWhere('label_id', labelId).delete();
