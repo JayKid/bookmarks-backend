@@ -11,5 +11,7 @@ jobs:
         uses: actions/setup-node@v3
       - name: Install dependencies
         run: npm install
+      - name: Compile code
+        run: npx tsc
       - name: Run tests 
         run: npm test
