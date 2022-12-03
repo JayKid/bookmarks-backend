@@ -12,18 +12,19 @@ export default class BookmarksService {
     };
 
     public addBookmark = async ({ url, title, userId }: { url: string, title?: string, userId: string }) => {
-        const bookmark = this.bookmarksStore.addBookmark({ url, title, userId });
-        return bookmark;
+        return await this.bookmarksStore.addBookmark({ url, title, userId });
+    }
+
+    public deleteBookmark = async (bookmarkId: string) => {
+        return await this.bookmarksStore.deleteBookmark(bookmarkId);
     }
 
     public addLabelToBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }) => {
-        const bookmark = this.bookmarksStore.addLabelToBookmark({ bookmarkId, labelId });
-        return bookmark;
+        return await this.bookmarksStore.addLabelToBookmark({ bookmarkId, labelId });
     }
 
     public removeLabelFromBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }) => {
-        const bookmark = this.bookmarksStore.removeLabelFromBookmark({ bookmarkId, labelId });
-        return bookmark;
+        return await this.bookmarksStore.removeLabelFromBookmark({ bookmarkId, labelId });
     }
 
     public isOwner = async ({ bookmarkId, userId }: { bookmarkId: string, userId: string }) => {

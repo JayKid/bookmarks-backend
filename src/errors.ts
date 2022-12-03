@@ -13,6 +13,15 @@ export class BookmarkError extends CustomError {
     }
 }
 
+export class BookmarkDoesNotExistError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, BookmarkDoesNotExistError);
+        this.type = "bookmark-does-not-exist";
+        this.errorMessage = args[0];
+    }
+}
+
 export class BookmarkAlreadyExistsError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError, BookmarkDoesNotHaveLabelError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError, BookmarkDoesNotHaveLabelError, BookmarkDoesNotExistError } from "../../errors";
 import BookmarksService from "../../services/Bookmarks";
 import LabelsService from "../../services/Labels";
 
@@ -83,6 +83,55 @@ export default class BookmarksHandler {
         // Return in the appropriate format
         return res.status(200).json({ bookmark });
     };
+
+    public deleteBookmark = async (req: Request, res: Response) => {
+        // Validate input
+        if (!req.params?.bookmarkId) {
+            return res.status(400).json({
+                error: {
+                    type: "missing-bookmark-id",
+                    message: "missing bookmark ID"
+                }
+            });
+        }
+
+        const { bookmarkId } = req.params;
+        // @ts-ignore because user is guaranteed by the middleware
+        const userId = req.user.id;
+
+        // Check ownership of bookmark
+        const isBookmarkOwner = await this.bookmarksService.isOwner({ bookmarkId, userId });
+        if (isBookmarkOwner instanceof BookmarkDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isBookmarkOwner.type,
+                    message: isBookmarkOwner.errorMessage
+                }
+            });
+        }
+        if (!isBookmarkOwner) {
+            return res.status(403).json({
+                error: {
+                    type: "forbidden-access-to-bookmark",
+                    message: "User does not own this bookmark"
+                }
+            });
+        }
+
+        // Delete bookmark
+        const bookmark = await this.bookmarksService.deleteBookmark(bookmarkId);
+        // Deal with errors if needed
+        if (bookmark instanceof BookmarkError) {
+            return res.status(500).json({
+                error: {
+                    type: bookmark.type,
+                    message: bookmark.errorMessage,
+                }
+            });
+        }
+        // Return in the appropriate format
+        return res.status(200).send();
+    }
 
     public addLabelToBookmark = async (req: Request, res: Response) => {
         // Validate input

@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { Bookmark } from "../../interfaces/Bookmark";
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkDoesNotHaveLabelError, BookmarkError, BookmarkLabelError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkDoesNotExistError, BookmarkDoesNotHaveLabelError, BookmarkError, BookmarkLabelError } from "../../errors";
 import { randomUUID } from "crypto";
 import { LabelsBookmarks } from "../../interfaces/Bookmark/labelsbookmarks";
 
@@ -121,6 +121,21 @@ export default class BookmarksStore {
         }
     };
 
+    public deleteBookmark = async (bookmarkId: string): Promise<true | BookmarkError> => {
+        try {
+            const deletionResult = await this.getTable().where('id', bookmarkId).delete();
+            if (deletionResult === 0) {
+                return new BookmarkDoesNotExistError(`The bookmark with ID: ${bookmarkId} does not exist`);
+            }
+            if (deletionResult === 1) {
+                return true;
+            }
+            return new BookmarkError("There was an error deleting the bookmark");
+        } catch (err) {
+            return new BookmarkError("There was an error deleting the bookmark");
+        }
+    }
+
     public addLabelToBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<true | BookmarkLabelError | BookmarkAlreadyHasLabelError> => {
         try {
             await this.getBookmarksLabelsTable().insert({
@@ -154,10 +169,14 @@ export default class BookmarksStore {
         }
     }
 
-    public isOwner = async ({ bookmarkId, userId }: { bookmarkId: string, userId: string }): Promise<true | false | BookmarkError> => {
+    public isOwner = async ({ bookmarkId, userId }: { bookmarkId: string, userId: string }): Promise<true | false | BookmarkDoesNotExistError | BookmarkError> => {
         try {
-            const result = await this.getTable().where('id', bookmarkId).andWhere('user_id', userId).orderBy("created_at", "desc");
+            const result = await this.getTable().where('id', bookmarkId);
             if (result.length !== 1) {
+                return new BookmarkDoesNotExistError(`The bookmark with id: ${bookmarkId} does not exist`);
+            }
+
+            if (result[0].user_id !== userId) {
                 return false;
             }
             return true;
