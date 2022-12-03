@@ -281,7 +281,7 @@ test('deleteBookmark should handle an unknown error when deleting the bookmark',
     expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-error");
 });
 
-test('deleteBookmark should call the service with the right parameters and return the new bookmark', async () => {
+test('deleteBookmark should call the service with the right parameters and return 200', async () => {
     const jsonMocked = jest.fn();
     const sendMocked = jest.fn();
     const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked, send: sendMocked });
