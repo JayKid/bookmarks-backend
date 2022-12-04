@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError, BookmarkDoesNotHaveLabelError, BookmarkDoesNotExistError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError, BookmarkDoesNotHaveLabelError, BookmarkDoesNotExistError, LabelDoesNotExistError } from "../../errors";
 import BookmarksService from "../../services/Bookmarks";
 import LabelsService from "../../services/Labels";
 
@@ -19,11 +19,20 @@ export default class BookmarksHandler {
         let labelId;
         if (req?.query?.labelId) {
             labelId = req?.query?.labelId as string;
-            if (!this.labelsService.isOwner({ labelId, userId })) {
+            const isLabelOwner = this.labelsService.isOwner({ labelId, userId });
+            if (isLabelOwner instanceof LabelDoesNotExistError) {
+                return res.status(404).json({
+                    error: {
+                        type: isLabelOwner.type,
+                        message: isLabelOwner.errorMessage
+                    }
+                });
+            }
+            if (!isLabelOwner) {
                 return res.status(403).json({
                     error: {
-                        type: "incorrect-label",
-                        message: "User does not own this label or it does not exist"
+                        type: "forbidden-access-to-label",
+                        message: "User does not own this label"
                     }
                 });
             }
@@ -222,20 +231,36 @@ export default class BookmarksHandler {
 
         // Check ownership of both entities
         const isBookmarkOwner = await this.bookmarksService.isOwner({ bookmarkId, userId });
+        if (isBookmarkOwner instanceof BookmarkDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isBookmarkOwner.type,
+                    message: isBookmarkOwner.errorMessage
+                }
+            });
+        }
         if (!isBookmarkOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-bookmark",
-                    message: "User does not own this bookmark or it does not exist"
+                    type: "forbidden-access-to-bookmark",
+                    message: "User does not own this bookmark"
                 }
             });
         }
         const isLabelOwner = await this.labelsService.isOwner({ labelId, userId });
+        if (isLabelOwner instanceof LabelDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isLabelOwner.type,
+                    message: isLabelOwner.errorMessage
+                }
+            });
+        }
         if (!isLabelOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-label",
-                    message: "User does not own this label or it does not exist"
+                    type: "forbidden-access-to-label",
+                    message: "User does not own this label"
                 }
             });
         }
@@ -280,20 +305,36 @@ export default class BookmarksHandler {
 
         // Check ownership of both entities
         const isBookmarkOwner = await this.bookmarksService.isOwner({ bookmarkId, userId });
+        if (isBookmarkOwner instanceof BookmarkDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isBookmarkOwner.type,
+                    message: isBookmarkOwner.errorMessage
+                }
+            });
+        }
         if (!isBookmarkOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-bookmark",
-                    message: "User does not own this bookmark or it does not exist"
+                    type: "forbidden-access-to-bookmark",
+                    message: "User does not own this bookmark"
                 }
             });
         }
         const isLabelOwner = await this.labelsService.isOwner({ labelId, userId });
+        if (isLabelOwner instanceof LabelDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isLabelOwner.type,
+                    message: isLabelOwner.errorMessage
+                }
+            });
+        }
         if (!isLabelOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-label",
-                    message: "User does not own this label or it does not exist"
+                    type: "forbidden-access-to-label",
+                    message: "User does not own this label"
                 }
             });
         }
