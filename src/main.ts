@@ -95,6 +95,7 @@ app.delete('/bookmarks/:bookmarkId/labels/:labelId', passport.authenticate('sess
 
 app.get('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.getLabels);
 app.post('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.createLabel);
+app.put('/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.updateLabel);
 app.delete('/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.deleteLabel);
 
 // Start server

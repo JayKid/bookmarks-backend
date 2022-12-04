@@ -51,6 +51,69 @@ export default class LabelsHandler {
         return res.status(200).json({ label });
     };
 
+    public updateLabel = async (req: Request, res: Response) => {
+        // Validate input
+        if (!req.params?.labelId) {
+            return res.status(400).json({
+                error: {
+                    type: "missing-label-id",
+                    message: "missing label ID"
+                }
+            });
+        }
+
+        if (req.body?.name !== undefined && req.body.name.length === 0) {
+            return res.status(400).json({
+                error: {
+                    type: "invalid-name",
+                    message: "A label cannot have an empty name"
+                }
+            });
+        }
+
+        // @ts-ignore because user is guaranteed by the middleware
+        const userId = req.user.id;
+
+        const { labelId } = req.params;
+        const { name } = req.body;
+        // Check ownership of the label
+        const isLabelOwner = await this.labelsService.isOwner({ labelId, userId });
+        if (isLabelOwner instanceof LabelDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isLabelOwner.type,
+                    message: isLabelOwner.errorMessage
+                }
+            });
+        }
+        if (!isLabelOwner) {
+            return res.status(403).json({
+                error: {
+                    type: "incorrect-label",
+                    message: "User does not own this label or it does not exist"
+                }
+            });
+        }
+
+        const fieldsToUpdate = {
+            name,
+        };
+
+        // Update label
+        const label = await this.labelsService.updateLabel(labelId, fieldsToUpdate);
+        if (label instanceof LabelError) {
+            return res.status(500).json({
+                error: {
+                    type: "label-error",
+                    message: label.errorMessage,
+                }
+            });
+        }
+
+        // Return in the appropriate format
+        return res.status(200).json({ label });
+    };
+
     public deleteLabel = async (req: Request, res: Response) => {
         // Validate input
         if (!req.params?.labelId) {
