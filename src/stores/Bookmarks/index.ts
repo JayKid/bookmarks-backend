@@ -126,7 +126,7 @@ export default class BookmarksStore {
                 id: bookmarkId,
             }).update({ ...fieldsToUpdate, updated_at: new Date() }).returning(['id', 'url', 'title', 'user_id']);
             if (!updatedBookmarkResult[0]) {
-                return new BookmarkError();
+                return new BookmarkError("There was an error updating the bookmark");
             }
             const updatedBookmark = updatedBookmarkResult[0];
             return {
