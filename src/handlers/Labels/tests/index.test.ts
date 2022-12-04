@@ -181,7 +181,7 @@ test('updateLabel should return an error when the label does not exist', async (
     await labelsHandler.updateLabel(request, response);
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(404);
-    expect(jsonMocked.mock.lastCall[0].error.type).toBe("label-not-exists");
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("label-does-not-exist");
 });
 
 test('updateLabel should return an error when the label is not owned by the user', async () => {
@@ -341,7 +341,7 @@ test('deleteLabel should return an error when the label does not exist', async (
     await labelsHandler.deleteLabel(request, response);
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(404);
-    expect(jsonMocked.mock.lastCall[0].error.type).toBe("label-not-exists");
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("label-does-not-exist");
 });
 
 test('deleteLabel should handle an unknown error when deleting the label', async () => {

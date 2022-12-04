@@ -634,7 +634,7 @@ test('addLabelToBookmark should return an error when the label does not exist', 
     await bookmarksHandler.addLabelToBookmark(request, response);
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(404);
-    expect(jsonMocked.mock.lastCall[0].error.type).toBe("label-not-exists");
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("label-does-not-exist");
 });
 
 test('addLabelToBookmark should return an error when the bookmark already has the label', async () => {
@@ -849,7 +849,7 @@ test('removeLabelFromBookmark should return an error when the label does not exi
     await bookmarksHandler.removeLabelFromBookmark(request, response);
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(404);
-    expect(jsonMocked.mock.lastCall[0].error.type).toBe("label-not-exists");
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("label-does-not-exist");
 });
 
 test('removeLabelFromBookmark should return an error when the bookmark does not have the label', async () => {

@@ -98,7 +98,7 @@ export class LabelDoesNotExistError extends CustomError {
     public constructor(...args: any[]) {
         super(...args);
         Error.captureStackTrace(this, LabelDoesNotExistError);
-        this.type = "label-not-exists";
+        this.type = "label-does-not-exist";
         this.errorMessage = args[0];
     }
 }
