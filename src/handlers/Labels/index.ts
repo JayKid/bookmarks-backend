@@ -89,8 +89,8 @@ export default class LabelsHandler {
         if (!isLabelOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-label",
-                    message: "User does not own this label or it does not exist"
+                    type: "forbidden-access-to-label",
+                    message: "User does not own this label"
                 }
             });
         }
