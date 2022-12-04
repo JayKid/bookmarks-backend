@@ -42,6 +42,25 @@ export default class LabelsStore {
         }
     };
 
+    public updateLabel = async (labelId: string, fieldsToUpdate: Pick<Label, 'name'>): Promise<Label | LabelError> => {
+        try {
+            const updatedLabelResult = await this.getTable().where({
+                id: labelId,
+            }).update({ ...fieldsToUpdate, updated_at: new Date() }).returning(['id', 'name', 'user_id']);
+            if (!updatedLabelResult[0]) {
+                return new LabelError("There was an error updating the label");
+            }
+            const updatedLabel = updatedLabelResult[0];
+            return {
+                id: labelId,
+                name: updatedLabel.name,
+                user_id: updatedLabel.user_id
+            };
+        } catch (err) {
+            return new LabelError("There was an error updating the label");
+        }
+    }
+
     public deleteLabel = async (labelId: string, userId: string): Promise<true | LabelError> => {
         try {
             const deletionResult = await this.getTable().where('user_id', userId).andWhere('id', labelId).delete();
@@ -58,16 +77,20 @@ export default class LabelsStore {
         }
     }
 
-    public isOwner = async ({ labelId, userId }: { labelId: string, userId: string }): Promise<true | false | LabelError> => {
+    public isOwner = async ({ labelId, userId }: { labelId: string, userId: string }): Promise<true | false | LabelDoesNotExistError | LabelError> => {
         try {
-            const result = await this.getTable().where('id', labelId).andWhere('user_id', userId).orderBy("created_at", "desc");
+            const result = await this.getTable().where('id', labelId);
             if (result.length !== 1) {
+                return new LabelDoesNotExistError(`The label with id: ${labelId} does not exist`);
+            }
+
+            if (result[0].user_id !== userId) {
                 return false;
             }
             return true;
 
         } catch (err) {
-            return new LabelError("An unexpected error occurred while retrieving the bookmark");
+            return new LabelError("An unexpected error occurred while retrieving the label");
         }
     }
 }

@@ -6,4 +6,6 @@ export type Bookmark = {
     title?: string;
     user_id: string;
     labels?: EmbeddedLabel[];
+    created_at?: Date;
+    updated_at?: Date;
 };

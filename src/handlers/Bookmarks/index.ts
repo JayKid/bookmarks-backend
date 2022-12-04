@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError, BookmarkDoesNotHaveLabelError } from "../../errors";
+import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError, BookmarkDoesNotHaveLabelError, BookmarkDoesNotExistError, LabelDoesNotExistError } from "../../errors";
 import BookmarksService from "../../services/Bookmarks";
 import LabelsService from "../../services/Labels";
 
@@ -19,11 +19,20 @@ export default class BookmarksHandler {
         let labelId;
         if (req?.query?.labelId) {
             labelId = req?.query?.labelId as string;
-            if (!this.labelsService.isOwner({ labelId, userId })) {
+            const isLabelOwner = this.labelsService.isOwner({ labelId, userId });
+            if (isLabelOwner instanceof LabelDoesNotExistError) {
+                return res.status(404).json({
+                    error: {
+                        type: isLabelOwner.type,
+                        message: isLabelOwner.errorMessage
+                    }
+                });
+            }
+            if (!isLabelOwner) {
                 return res.status(403).json({
                     error: {
-                        type: "incorrect-label",
-                        message: "User does not own this label or it does not exist"
+                        type: "forbidden-access-to-label",
+                        message: "User does not own this label"
                     }
                 });
             }
@@ -84,6 +93,119 @@ export default class BookmarksHandler {
         return res.status(200).json({ bookmark });
     };
 
+    public updateBookmark = async (req: Request, res: Response) => {
+        // Validate input
+        if (!req.params?.bookmarkId) {
+            return res.status(400).json({
+                error: {
+                    type: "missing-bookmark-id",
+                    message: "missing bookmark ID"
+                }
+            });
+        }
+
+        if (req.body?.url !== undefined && !this.isValidUrl(req.body.url)) {
+            return res.status(400).json({
+                error: {
+                    type: "invalid-url",
+                    message: "invalid URL provided",
+                }
+            });
+        }
+
+        const { bookmarkId } = req.params;
+        const { url, title } = req.body;
+        // @ts-ignore because user is guaranteed by the middleware
+        const userId = req.user.id;
+
+        // Check ownership of bookmark
+        const isBookmarkOwner = await this.bookmarksService.isOwner({ bookmarkId, userId });
+        if (isBookmarkOwner instanceof BookmarkDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isBookmarkOwner.type,
+                    message: isBookmarkOwner.errorMessage
+                }
+            });
+        }
+        if (!isBookmarkOwner) {
+            return res.status(403).json({
+                error: {
+                    type: "forbidden-access-to-bookmark",
+                    message: "User does not own this bookmark"
+                }
+            });
+        }
+
+        const fieldsToUpdate = {
+            url,
+            title,
+        };
+
+        // Update bookmark
+        const updatedBookmark = await this.bookmarksService.updateBookmark(bookmarkId, fieldsToUpdate);
+        // Deal with errors if needed
+        if (updatedBookmark instanceof BookmarkError) {
+            return res.status(500).json({
+                error: {
+                    type: updatedBookmark.type,
+                    message: updatedBookmark.errorMessage,
+                }
+            });
+        }
+        // Return in the appropriate format
+        return res.status(200).send({ bookmark: updatedBookmark });
+    }
+
+    public deleteBookmark = async (req: Request, res: Response) => {
+        // Validate input
+        if (!req.params?.bookmarkId) {
+            return res.status(400).json({
+                error: {
+                    type: "missing-bookmark-id",
+                    message: "missing bookmark ID"
+                }
+            });
+        }
+
+        const { bookmarkId } = req.params;
+        // @ts-ignore because user is guaranteed by the middleware
+        const userId = req.user.id;
+
+        // Check ownership of bookmark
+        const isBookmarkOwner = await this.bookmarksService.isOwner({ bookmarkId, userId });
+        if (isBookmarkOwner instanceof BookmarkDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isBookmarkOwner.type,
+                    message: isBookmarkOwner.errorMessage
+                }
+            });
+        }
+        if (!isBookmarkOwner) {
+            return res.status(403).json({
+                error: {
+                    type: "forbidden-access-to-bookmark",
+                    message: "User does not own this bookmark"
+                }
+            });
+        }
+
+        // Delete bookmark
+        const bookmark = await this.bookmarksService.deleteBookmark(bookmarkId);
+        // Deal with errors if needed
+        if (bookmark instanceof BookmarkError) {
+            return res.status(500).json({
+                error: {
+                    type: bookmark.type,
+                    message: bookmark.errorMessage,
+                }
+            });
+        }
+        // Return in the appropriate format
+        return res.status(200).send();
+    }
+
     public addLabelToBookmark = async (req: Request, res: Response) => {
         // Validate input
         if (!req.params?.bookmarkId) {
@@ -109,20 +231,36 @@ export default class BookmarksHandler {
 
         // Check ownership of both entities
         const isBookmarkOwner = await this.bookmarksService.isOwner({ bookmarkId, userId });
+        if (isBookmarkOwner instanceof BookmarkDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isBookmarkOwner.type,
+                    message: isBookmarkOwner.errorMessage
+                }
+            });
+        }
         if (!isBookmarkOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-bookmark",
-                    message: "User does not own this bookmark or it does not exist"
+                    type: "forbidden-access-to-bookmark",
+                    message: "User does not own this bookmark"
                 }
             });
         }
         const isLabelOwner = await this.labelsService.isOwner({ labelId, userId });
+        if (isLabelOwner instanceof LabelDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isLabelOwner.type,
+                    message: isLabelOwner.errorMessage
+                }
+            });
+        }
         if (!isLabelOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-label",
-                    message: "User does not own this label or it does not exist"
+                    type: "forbidden-access-to-label",
+                    message: "User does not own this label"
                 }
             });
         }
@@ -167,20 +305,36 @@ export default class BookmarksHandler {
 
         // Check ownership of both entities
         const isBookmarkOwner = await this.bookmarksService.isOwner({ bookmarkId, userId });
+        if (isBookmarkOwner instanceof BookmarkDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isBookmarkOwner.type,
+                    message: isBookmarkOwner.errorMessage
+                }
+            });
+        }
         if (!isBookmarkOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-bookmark",
-                    message: "User does not own this bookmark or it does not exist"
+                    type: "forbidden-access-to-bookmark",
+                    message: "User does not own this bookmark"
                 }
             });
         }
         const isLabelOwner = await this.labelsService.isOwner({ labelId, userId });
+        if (isLabelOwner instanceof LabelDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: isLabelOwner.type,
+                    message: isLabelOwner.errorMessage
+                }
+            });
+        }
         if (!isLabelOwner) {
             return res.status(403).json({
                 error: {
-                    type: "incorrect-label",
-                    message: "User does not own this label or it does not exist"
+                    type: "forbidden-access-to-label",
+                    message: "User does not own this label"
                 }
             });
         }
@@ -204,6 +358,9 @@ export default class BookmarksHandler {
 
     private isValidUrl(url: string): boolean {
         try {
+            if (!url) {
+                return false;
+            }
             new URL(url);
         }
         catch (err) {

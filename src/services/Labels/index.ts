@@ -1,3 +1,4 @@
+import { Label } from "../../interfaces/Label";
 import LabelsStore from "../../stores/Labels";
 
 export default class LabelsService {
@@ -12,13 +13,15 @@ export default class LabelsService {
     };
 
     public createLabel = async ({ name, userId }: { name: string, userId: string }) => {
-        const label = this.labelsStore.createLabel({ name, userId });
-        return label;
+        return await this.labelsStore.createLabel({ name, userId });
+    }
+
+    public updateLabel = async (labelId: string, fieldsToUpdate: Pick<Label, 'name'>) => {
+        return await this.labelsStore.updateLabel(labelId, fieldsToUpdate);
     }
 
     public deleteLabel = async ({ labelId, userId }: { labelId: string, userId: string }) => {
-        const label = this.labelsStore.deleteLabel(labelId, userId);
-        return label;
+        return await this.labelsStore.deleteLabel(labelId, userId);
     }
 
     public isOwner = async ({ labelId, userId }: { labelId: string, userId: string }) => {
