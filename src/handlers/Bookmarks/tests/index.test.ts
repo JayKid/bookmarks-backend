@@ -183,6 +183,179 @@ test('addBookmark should handle an unknown error when creating the bookmark', as
     expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-creation-error");
 });
 
+test('updateBookmark should return an error when no bookmarkId is provided', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {},
+        body: {
+            url: "https://www.wikipedia.org/",
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    // @ts-ignore
+    bookmarksService.updateBookmark = jest.fn();
+
+    // @ts-ignore
+    await bookmarksHandler.updateBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(400);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("missing-bookmark-id");
+});
+
+test('updateBookmark should return an error when provided an invalid URL', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+        },
+        body: {
+            url: "",
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    // @ts-ignore
+    bookmarksService.updateBookmark = jest.fn();
+
+    // @ts-ignore
+    await bookmarksHandler.updateBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(400);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("invalid-url");
+});
+
+test('updateBookmark should return an error when the bookmark does not exist', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+        },
+        body: {
+            url: "https://www.wikipedia.org/",
+            title: "The updated bookmark title",
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const returnValue = new BookmarkDoesNotExistError()
+    // @ts-ignore
+    bookmarksService.updateBookmark = jest.fn();
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(returnValue);
+
+    // @ts-ignore
+    await bookmarksHandler.updateBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(404);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-does-not-exist");
+});
+
+test('updateBookmark should return an error when the bookmark is not owned by the user', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+        },
+        body: {
+            url: "https://www.wikipedia.org/",
+            title: "The updated bookmark title",
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const returnValue = new BookmarkError();
+    // @ts-ignore
+    bookmarksService.updateBookmark = jest.fn().mockReturnValue(returnValue);
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(false);
+
+    // @ts-ignore
+    await bookmarksHandler.updateBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(403);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("forbidden-access-to-bookmark");
+});
+
+test('updateBookmark should handle an unknown error when updating the bookmark', async () => {
+    const jsonMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+        },
+        body: {
+            url: "https://www.wikipedia.org/",
+            title: "The updated bookmark title",
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const returnValue = new BookmarkError();
+    // @ts-ignore
+    bookmarksService.updateBookmark = jest.fn().mockReturnValue(returnValue);
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(true);
+
+    // @ts-ignore
+    await bookmarksHandler.updateBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(500);
+    expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-error");
+});
+
+test('updateBookmark should call the service with the right parameters and return the updated bookmark', async () => {
+    const jsonMocked = jest.fn();
+    const sendMocked = jest.fn();
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked, send: sendMocked });
+    const request: any = {
+        ...getMockedUser(),
+        params: {
+            bookmarkId: randomUUID(),
+        },
+        body: {
+            url: "https://www.wikipedia.org/",
+            title: "The updated bookmark title",
+        }
+    };
+    const response: any = {
+        status: statusMocked
+    };
+
+    const returnValue = {};
+    const mockedUpdateBookmark = jest.fn().mockReturnValue(returnValue);
+    // @ts-ignore
+    bookmarksService.updateBookmark = mockedUpdateBookmark;
+    // @ts-ignore
+    bookmarksService.isOwner = jest.fn().mockReturnValue(true);
+
+    // @ts-ignore
+    await bookmarksHandler.updateBookmark(request, response);
+    // @ts-ignore
+    expect(statusMocked).toHaveBeenCalledWith(200);
+    expect(mockedUpdateBookmark).toHaveBeenCalledWith(request.params.bookmarkId, { url: request.body.url, title: request.body.title });
+    expect(sendMocked).toHaveBeenCalled();
+});
+
 test('deleteBookmark should return an error when no bookmarkId is provided', async () => {
     const jsonMocked = jest.fn();
     const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });

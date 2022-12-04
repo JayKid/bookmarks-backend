@@ -120,6 +120,25 @@ export default class BookmarksStore {
             return new BookmarkError("There was an error saving the bookmark");
         }
     };
+    public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Pick<Bookmark, 'url' | 'title'>): Promise<Bookmark | BookmarkError> => {
+        try {
+            const updatedBookmarkResult = await this.getTable().where({
+                id: bookmarkId,
+            }).update({ ...fieldsToUpdate, updated_at: new Date() }).returning(['id', 'url', 'title', 'user_id']);
+            if (!updatedBookmarkResult[0]) {
+                return new BookmarkError();
+            }
+            const updatedBookmark = updatedBookmarkResult[0];
+            return {
+                id: bookmarkId,
+                url: updatedBookmark.url,
+                title: updatedBookmark.title,
+                user_id: updatedBookmark.user_id
+            };
+        } catch (err) {
+            return new BookmarkError("There was an error updating the bookmark");
+        }
+    }
 
     public deleteBookmark = async (bookmarkId: string): Promise<true | BookmarkError> => {
         try {

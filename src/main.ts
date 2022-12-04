@@ -88,6 +88,7 @@ app.post('/logout', passport.authenticate('session'), usersHandler.verifyLoggedI
 
 app.get('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.getBookmarks);
 app.post('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
+app.put('/bookmarks/:bookmarkId', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.updateBookmark);
 app.delete('/bookmarks/:bookmarkId', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.deleteBookmark);
 app.post('/bookmarks/:bookmarkId/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addLabelToBookmark);
 app.delete('/bookmarks/:bookmarkId/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.removeLabelFromBookmark);

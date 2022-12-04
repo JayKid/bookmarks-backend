@@ -1,3 +1,4 @@
+import { Bookmark } from "../../interfaces/Bookmark";
 import BookmarksStore from "../../stores/Bookmarks";
 
 export default class BookmarksService {
@@ -13,6 +14,10 @@ export default class BookmarksService {
 
     public addBookmark = async ({ url, title, userId }: { url: string, title?: string, userId: string }) => {
         return await this.bookmarksStore.addBookmark({ url, title, userId });
+    }
+
+    public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Pick<Bookmark, 'url' | 'title'>) => {
+        return await this.bookmarksStore.updateBookmark(bookmarkId, fieldsToUpdate);
     }
 
     public deleteBookmark = async (bookmarkId: string) => {
