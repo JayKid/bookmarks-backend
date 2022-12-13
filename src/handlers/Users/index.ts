@@ -129,6 +129,12 @@ export default class UsersHandler {
         });
     }
 
+    public getUser = (req: Request, res: Response) => {
+        return res.status(200).json({
+            user: req.user
+        })
+    }
+
     public verifyLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
         if (!req.user) {
             return res.status(400).json({

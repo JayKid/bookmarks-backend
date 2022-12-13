@@ -86,6 +86,8 @@ app.post('/login', usersHandler.login);
 app.post('/signup', usersHandler.signup);
 app.post('/logout', passport.authenticate('session'), usersHandler.verifyLoggedIn, usersHandler.logout);
 
+app.get('/user', passport.authenticate('session'), usersHandler.verifyLoggedIn, usersHandler.getUser)
+
 app.get('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.getBookmarks);
 app.post('/bookmarks', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.addBookmark);
 app.put('/bookmarks/:bookmarkId', passport.authenticate('session'), usersHandler.verifyLoggedIn, bookmarksHandler.updateBookmark);
