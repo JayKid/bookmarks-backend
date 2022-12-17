@@ -122,7 +122,7 @@ export default class BookmarksHandler {
             });
         }
 
-        if (req.body?.thumbnail !== undefined && !this.isValidUrl(req.body.thumbnail)) {
+        if (req.body?.thumbnail !== undefined && req.body?.thumbnail !== ""  && !this.isValidUrl(req.body.thumbnail)) {
             return res.status(400).json({
                 error: {
                     type: "invalid-thumbnail",
