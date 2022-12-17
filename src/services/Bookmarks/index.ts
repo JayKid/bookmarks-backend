@@ -12,8 +12,8 @@ export default class BookmarksService {
         return await this.bookmarksStore.getBookmarks(userId, labelId);
     };
 
-    public addBookmark = async ({ url, title, userId }: { url: string, title?: string, userId: string }) => {
-        return await this.bookmarksStore.addBookmark({ url, title, userId });
+    public addBookmark = async ({ url, title, thumbnail, userId }: { url: string, title?: string, thumbnail?: string, userId: string }) => {
+        return await this.bookmarksStore.addBookmark({ url, title, thumbnail, userId });
     }
 
     public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Pick<Bookmark, 'url' | 'title'>) => {

@@ -68,10 +68,19 @@ export default class BookmarksHandler {
                 }
             });
         }
-        const { url, title } = req.body;
+
+        if (req.body.thumbnail !== undefined && !this.isValidUrl(req.body.thumbnail)) {
+            return res.status(400).json({
+                error: {
+                    type: "invalid-thumbnail",
+                    message: "invalid thumbnail provided",
+                }
+            });
+        }
+        const { url, title, thumbnail } = req.body;
         // Save bookmark
         // @ts-ignore because user is guaranteed by the middleware
-        const bookmark = await this.bookmarksService.addBookmark({ url, title, userId: req.user.id });
+        const bookmark = await this.bookmarksService.addBookmark({ url, title, thumbnail, userId: req.user.id });
         // Deal with errors if needed
         if (bookmark instanceof BookmarkAlreadyExistsError) {
             return res.status(400).json({
@@ -113,8 +122,17 @@ export default class BookmarksHandler {
             });
         }
 
+        if (req.body?.thumbnail !== undefined && !this.isValidUrl(req.body.thumbnail)) {
+            return res.status(400).json({
+                error: {
+                    type: "invalid-thumbnail",
+                    message: "invalid thumbnail provided",
+                }
+            });
+        }
+
         const { bookmarkId } = req.params;
-        const { url, title } = req.body;
+        const { url, title, thumbnail } = req.body;
         // @ts-ignore because user is guaranteed by the middleware
         const userId = req.user.id;
 
@@ -140,6 +158,7 @@ export default class BookmarksHandler {
         const fieldsToUpdate = {
             url,
             title,
+            thumbnail,
         };
 
         // Update bookmark
