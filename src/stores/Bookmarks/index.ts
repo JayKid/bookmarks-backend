@@ -8,6 +8,7 @@ type BookmarkWithOptionalLabelRow = {
     id: string;
     url: string;
     title?: string;
+    thumbnail?: string;
     user_id: string;
     created_at: Date;
     updated_at: Date;
@@ -34,7 +35,7 @@ export default class BookmarksStore {
 
     public getBookmarks = async (userId: string, labelId?: string): Promise<Bookmark[] | BookmarkError> => {
         try {
-            const result = await this.database.raw(`SELECT b.id, b.url, b.title, b.user_id, b.created_at, b.updated_at, l.id as label_id, l.name as label_name
+            const result = await this.database.raw(`SELECT b.id, b.url, b.title, b.thumbnail, b.user_id, b.created_at, b.updated_at, l.id as label_id, l.name as label_name
             FROM bookmarks b
             LEFT JOIN labels_bookmarks lb
             ON lb.bookmark_id = b.id
@@ -42,7 +43,7 @@ export default class BookmarksStore {
             ON l.id = lb.label_id
             WHERE b.user_id = ?`, userId);
 
-            // { [bookmarkId]: { bookmark_id, bookmark_url, bookmark_title, labels: [{ id: name }]} }
+            // { [bookmarkId]: { bookmark_id, bookmark_url, bookmark_title, bookmark_thumbnail, labels: [{ id: name }]} }
             const bookmarksWithLabels = {} as any;
             if (result.rows) {
                 result.rows.forEach((bookmarkWithLabelRow: BookmarkWithOptionalLabelRow) => {
@@ -54,6 +55,7 @@ export default class BookmarksStore {
                             id: bookmarkWithLabelRow.id,
                             url: bookmarkWithLabelRow.url,
                             title: bookmarkWithLabelRow.title,
+                            thumbnail: bookmarkWithLabelRow.thumbnail,
                             created_at: bookmarkWithLabelRow.created_at,
                             updated_at: bookmarkWithLabelRow.updated_at,
                         }
@@ -98,18 +100,20 @@ export default class BookmarksStore {
         }
     };
 
-    public addBookmark = async ({ url, title, userId }: { url: string, title?: string, userId: string }): Promise<Bookmark | BookmarkAlreadyExistsError | BookmarkError> => {
+    public addBookmark = async ({ url, title, thumbnail, userId }: { url: string, title?: string, thumbnail?: string, userId: string }): Promise<Bookmark | BookmarkAlreadyExistsError | BookmarkError> => {
         try {
             const bookmark = await this.getTable().insert({
                 id: randomUUID(),
                 url,
                 title,
+                thumbnail,
                 user_id: userId
             }).returning('id');
             return {
                 id: bookmark[0].id,
                 url,
                 title,
+                thumbnail,
                 user_id: userId
             };
         } catch (err) {
@@ -120,11 +124,11 @@ export default class BookmarksStore {
             return new BookmarkError("There was an error saving the bookmark");
         }
     };
-    public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Pick<Bookmark, 'url' | 'title'>): Promise<Bookmark | BookmarkError> => {
+    public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Pick<Bookmark, 'url' | 'title' | 'thumbnail'>): Promise<Bookmark | BookmarkError> => {
         try {
             const updatedBookmarkResult = await this.getTable().where({
                 id: bookmarkId,
-            }).update({ ...fieldsToUpdate, updated_at: new Date() }).returning(['id', 'url', 'title', 'user_id']);
+            }).update({ ...fieldsToUpdate, updated_at: new Date() }).returning(['id', 'url', 'title', 'thumbnail', 'user_id']);
             if (!updatedBookmarkResult[0]) {
                 return new BookmarkError("There was an error updating the bookmark");
             }
@@ -133,6 +137,7 @@ export default class BookmarksStore {
                 id: bookmarkId,
                 url: updatedBookmark.url,
                 title: updatedBookmark.title,
+                thumbnail: updatedBookmark?.thumbnail,
                 user_id: updatedBookmark.user_id
             };
         } catch (err) {
