@@ -77,10 +77,18 @@ export default class BookmarksHandler {
                 }
             });
         }
-        const { url, title, thumbnail } = req.body;
+
+        const { url, title, thumbnail, stripQueryParams } = req.body;
+
+        let processedUrl = url;
+        if (stripQueryParams) {
+            const u = new URL(processedUrl);
+            processedUrl = u.href.replace(u.search, '');
+        }
+
         // Save bookmark
         // @ts-ignore because user is guaranteed by the middleware
-        const bookmark = await this.bookmarksService.addBookmark({ url, title, thumbnail, userId: req.user.id });
+        const bookmark = await this.bookmarksService.addBookmark({ url: processedUrl, title, thumbnail, userId: req.user.id });
         // Deal with errors if needed
         if (bookmark instanceof BookmarkAlreadyExistsError) {
             return res.status(400).json({
@@ -122,7 +130,7 @@ export default class BookmarksHandler {
             });
         }
 
-        if (req.body?.thumbnail !== undefined && req.body?.thumbnail !== ""  && !this.isValidUrl(req.body.thumbnail)) {
+        if (req.body?.thumbnail !== undefined && req.body?.thumbnail !== "" && !this.isValidUrl(req.body.thumbnail)) {
             return res.status(400).json({
                 error: {
                     type: "invalid-thumbnail",
