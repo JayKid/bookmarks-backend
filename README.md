@@ -14,13 +14,58 @@ After looking around and not being convinced with any of the existing OSS soluti
 
 #### Running
 
-+ `docker-compose up` will spin up a PostgreSQL instance and an `adminer` frontend to easily interact with it via UI.
+##### Development Mode
+To run the application in development mode (includes Adminer interface):
+```bash
+# Start all services including Adminer
+docker-compose --profile dev up
+```
 
-You can access this UI via `http://localhost:8080` and the DB on the default PostgreSQL port `5432`
+##### Production Mode
+To run the application in production mode (without Adminer):
+```bash
+# Start only the necessary services
+docker-compose --profile prod up
+```
 
-All credentials for the database are by now hardcoded in `docker-compose.yaml`. You will need these values in your `.env` file too. 
+The services will start in the following order:
+1. Database (PostgreSQL)
+2. Migrations (runs database schema setup)
+3. Backend server
+4. Adminer (development mode only)
 
-In order to create and populate your own `.env` file, duplicate the `.env-example` file present at the root of the repo and replace the DB variables with your desired values.
+You can access:
+- Adminer UI via `http://localhost:8080` (development only)
+- Backend API via `http://localhost:${SERVER_PORT:-3000}`
+- Database on the default PostgreSQL port `5432`
+
+##### Running Migrations Manually
+If you need to run migrations manually:
+```bash
+# Development
+docker-compose --profile dev run migrations
+
+# Production
+docker-compose --profile prod run migrations
+```
+
+The services can be configured using environment variables:
+- `DB_USER`: Database user (default: bookmarks-admin)
+- `DB_PASSWORD`: Database password (default: bookmarks-password)
+- `DB_NAME`: Database name (default: bookmarks-db)
+- `SERVER_PORT`: Backend server port (default: 3000)
+- `NODE_ENV`: Environment (development/production)
+
+You can set these variables in your shell before running docker-compose, or create a `.env` file in the project root. For example:
+```bash
+export DB_USER=myuser
+export DB_PASSWORD=mypassword
+export DB_NAME=mydb
+export SERVER_PORT=3001
+export NODE_ENV=production
+```
+
+These same values will need to be set in your application's `.env` file for the server to connect to the database.
 
 #### Seeding and running migrations
 

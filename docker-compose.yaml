@@ -6,16 +6,72 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: bookmarks-admin
-      POSTGRES_PASSWORD: bookmarks-password # change this
-      POSTGRES_DB: bookmarks-db
+      POSTGRES_USER: ${DB_USER:-bookmarks-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-bookmarks-password}
+      POSTGRES_DB: ${DB_NAME:-bookmarks-db}
     volumes:
       - ./db:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      - bookmarks-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-bookmarks-admin} -d ${DB_NAME:-bookmarks-db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DB_USER=${DB_USER:-bookmarks-admin}
+      - DB_PASSWORD=${DB_PASSWORD:-bookmarks-password}
+      - DB_NAME=${DB_NAME:-bookmarks-db}
+      - DB_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+    command: npm run migrate
+    networks:
+      - bookmarks-network
+    profiles:
+      - dev
+      - prod
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DB_USER=${DB_USER:-bookmarks-admin}
+      - DB_PASSWORD=${DB_PASSWORD:-bookmarks-password}
+      - DB_NAME=${DB_NAME:-bookmarks-db}
+      - DB_HOST=db
+      - SERVER_PORT=${SERVER_PORT:-3000}
+    ports:
+      - "${SERVER_PORT:-3000}:${SERVER_PORT:-3000}"
+    depends_on:
+      - migrations
+    networks:
+      - bookmarks-network
 
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+    networks:
+      - bookmarks-network
+    profiles:
+      - dev
+
+networks:
+  bookmarks-network:
+    driver: bridge
