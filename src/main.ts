@@ -9,7 +9,7 @@ import { knex as KnexFactory } from "knex";
 import BookmarksHandler from './handlers/Bookmarks';
 import BookmarksService from './services/Bookmarks';
 import BookmarksStore from './stores/Bookmarks';
-import appConfig from '../config';
+import appConfig from './config';
 import UsersStore from './stores/Users';
 import UsersService from './services/Users';
 import UsersHandler from './handlers/Users';
