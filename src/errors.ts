@@ -102,3 +102,39 @@ export class LabelDoesNotExistError extends CustomError {
         this.errorMessage = args[0];
     }
 }
+
+export class ListError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, ListError);
+        this.type = "list-error";
+        this.errorMessage = args[0];
+    }
+}
+
+export class ListDoesNotExistError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, ListDoesNotExistError);
+        this.type = "list-does-not-exist";
+        this.errorMessage = args[0];
+    }
+}
+
+export class BookmarkAlreadyInListError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, BookmarkAlreadyInListError);
+        this.type = "bookmark-already-in-list";
+        this.errorMessage = args[0];
+    }
+}
+
+export class BookmarkNotInListError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, BookmarkNotInListError);
+        this.type = "bookmark-not-in-list";
+        this.errorMessage = args[0];
+    }
+}
