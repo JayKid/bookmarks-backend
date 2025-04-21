@@ -1,6 +1,7 @@
 import { List } from "../../interfaces/List";
 import ListsStore from "../../stores/Lists";
 import { ListDoesNotExistError, ListError } from "../../errors";
+import { Bookmark } from "../../interfaces/Bookmark";
 
 export default class ListsService {
     private listsStore;

@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { List } from "../../interfaces/List";
 import { ListsBookmarks } from "../../interfaces/List/listsbookmarks";
 import { ListDoesNotExistError, ListError } from "../../errors";
+import { Bookmark } from "../../interfaces/Bookmark";
 
 export default class ListsStore {
     private database: Knex;
@@ -126,12 +127,66 @@ export default class ListsStore {
         }
     }
 
-    public getBookmarksInList = async (listId: string): Promise<string[] | ListError> => {
+    public getBookmarksInList = async (listId: string): Promise<Bookmark[] | ListError> => {
         try {
-            const bookmarks = await this.getJoinTable()
-                .where('list_id', listId)
-                .select('bookmark_id');
-            return bookmarks.map(b => b.bookmark_id);
+            const bookmarkRows = await this.database
+                .select(
+                    'b.id', 
+                    'b.url', 
+                    'b.title', 
+                    'b.thumbnail', 
+                    'b.user_id', 
+                    'b.created_at', 
+                    'b.updated_at',
+                    'l.id as label_id', 
+                    'l.name as label_name'
+                )
+                .from(`${this.JOIN_TABLE_NAME} as lb`)
+                .join('bookmarks as b', 'lb.bookmark_id', 'b.id')
+                .leftJoin('labels_bookmarks as lbm', 'b.id', 'lbm.bookmark_id')
+                .leftJoin('labels as l', 'lbm.label_id', 'l.id')
+                .where('lb.list_id', listId);
+
+            // Group results by bookmark ID to handle multiple labels per bookmark
+            const bookmarksMap = new Map<string, Bookmark>();
+            
+            bookmarkRows.forEach(row => {
+                if (!bookmarksMap.has(row.id)) {
+                    // Create new bookmark entry
+                    const bookmark: Bookmark = {
+                        id: row.id,
+                        url: row.url,
+                        title: row.title,
+                        thumbnail: row.thumbnail,
+                        user_id: row.user_id,
+                        created_at: row.created_at,
+                        updated_at: row.updated_at,
+                        labels: []
+                    };
+                    bookmarksMap.set(row.id, bookmark);
+                }
+                
+                // Add label if it exists
+                if (row.label_id && row.label_name) {
+                    const bookmark = bookmarksMap.get(row.id);
+                    if (bookmark) {
+                        if (!bookmark.labels) {
+                            bookmark.labels = [];
+                        }
+                        const labelExists = bookmark.labels.some(label => label.id === row.label_id);
+                        
+                        if (!labelExists) {
+                            bookmark.labels.push({
+                                id: row.label_id,
+                                name: row.label_name
+                            });
+                        }
+                    }
+                }
+            });
+            
+            console.log(`Bookmarks for list ${listId} retrieved:`, Array.from(bookmarksMap.values()));
+            return Array.from(bookmarksMap.values());
         } catch (err) {
             return new ListError("There was an error retrieving bookmarks from the list");
         }

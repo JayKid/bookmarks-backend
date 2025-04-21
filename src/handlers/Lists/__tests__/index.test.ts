@@ -3,6 +3,7 @@ import ListsHandler from "../index";
 import ListsService from "../../../services/Lists";
 import { ListDoesNotExistError, ListError } from "../../../errors";
 import { randomUUID } from "crypto";
+import { Bookmark } from "../../../interfaces/Bookmark";
 
 interface AuthenticatedRequest extends Request {
     user: {
@@ -298,7 +299,22 @@ describe("ListsHandler", () => {
     describe("getBookmarksInList", () => {
         it("should get bookmarks in a list", async () => {
             const listId = randomUUID();
-            const mockBookmarks = [randomUUID(), randomUUID()];
+            const mockBookmarks: Bookmark[] = [
+                {
+                    id: randomUUID(),
+                    url: "https://example.com/1",
+                    title: "Example 1",
+                    user_id: mockReq.user!.id,
+                    labels: []
+                },
+                {
+                    id: randomUUID(),
+                    url: "https://example.com/2",
+                    title: "Example 2",
+                    user_id: mockReq.user!.id,
+                    labels: []
+                }
+            ];
             mockReq.params = { listId };
             mockService.isOwner.mockResolvedValue(true);
             mockService.getBookmarksInList.mockResolvedValue(mockBookmarks);

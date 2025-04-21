@@ -2,6 +2,7 @@ import ListsService from "../index";
 import ListsStore from "../../../stores/Lists";
 import { ListDoesNotExistError, ListError } from "../../../errors";
 import { randomUUID } from "crypto";
+import { Bookmark } from "../../../interfaces/Bookmark";
 
 describe("ListsService", () => {
     let service: ListsService;
@@ -145,7 +146,23 @@ describe("ListsService", () => {
     describe("getBookmarksInList", () => {
         it("should get bookmarks in a list through store", async () => {
             const listId = randomUUID();
-            const mockBookmarks = [randomUUID(), randomUUID()];
+            const userId = randomUUID();
+            const mockBookmarks: Bookmark[] = [
+                {
+                    id: randomUUID(),
+                    url: "https://example.com/1",
+                    title: "Example 1",
+                    user_id: userId,
+                    labels: []
+                },
+                {
+                    id: randomUUID(),
+                    url: "https://example.com/2",
+                    title: "Example 2",
+                    user_id: userId,
+                    labels: []
+                }
+            ];
 
             mockStore.getBookmarksInList.mockResolvedValue(mockBookmarks);
 

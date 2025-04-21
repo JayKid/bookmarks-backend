@@ -667,8 +667,7 @@ paths:
                   bookmarks:
                     type: array
                     items:
-                      type: string
-                      format: uuid
+                      $ref: '#/components/schemas/Bookmark'
         '400':
           description: Invalid request
         '401':
