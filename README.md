@@ -36,7 +36,7 @@ The services will start in the following order:
 
 You can access:
 - Adminer UI via `http://localhost:8080` (development only)
-- Backend API via `http://localhost:${SERVER_PORT:-3000}`
+- Backend API via `http://localhost:${SERVER_PORT}`
 - Database on the default PostgreSQL port `5432`
 
 ##### Running Migrations Manually
@@ -50,10 +50,10 @@ docker-compose --profile prod run migrations
 ```
 
 The services can be configured using environment variables:
-- `DB_USER`: Database user (default: bookmarks-admin)
-- `DB_PASSWORD`: Database password (default: bookmarks-password)
-- `DB_NAME`: Database name (default: bookmarks-db)
-- `SERVER_PORT`: Backend server port (default: 3000)
+- `DB_USER`: Database user
+- `DB_PASSWORD`: Database password
+- `DB_NAME`: Database name
+- `SERVER_PORT`: Backend server port
 - `NODE_ENV`: Environment (development/production)
 
 You can set these variables in your shell before running docker-compose, or create a `.env` file in the project root. For example:
@@ -85,13 +85,5 @@ The API is documented using the OpenAPI 3.1.1 specification. You can find the co
 - Request/response schemas
 - Authentication requirements
 - Error handling
-
-### Key Endpoints
-
-The API provides endpoints for:
-- User authentication (signup, login, logout)
-- Bookmark management (CRUD operations)
-- Label management (CRUD operations)
-- Bookmark-Label relationship management
 
 All authenticated endpoints require a valid session cookie (`connect.sid`).

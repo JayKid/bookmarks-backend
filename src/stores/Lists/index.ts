@@ -185,7 +185,6 @@ export default class ListsStore {
                 }
             });
             
-            console.log(`Bookmarks for list ${listId} retrieved:`, Array.from(bookmarksMap.values()));
             return Array.from(bookmarksMap.values());
         } catch (err) {
             return new ListError("There was an error retrieving bookmarks from the list");
