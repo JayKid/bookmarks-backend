@@ -100,6 +100,30 @@ components:
       required:
         - error
 
+    List:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - user_id
+
 paths:
   /signup:
     post:
@@ -497,5 +521,237 @@ paths:
           description: Forbidden access to label
         '404':
           description: Label not found
+        '500':
+          description: Server error
+
+  /lists:
+    get:
+      summary: Get user's lists
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: List of lists retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lists:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/List'
+        '401':
+          description: Not authenticated
+        '500':
+          description: Server error
+
+    post:
+      summary: Create a new list
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+              required:
+                - name
+      responses:
+        '200':
+          description: List created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    $ref: '#/components/schemas/List'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '500':
+          description: Server error
+
+  /lists/{listId}:
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      summary: Update a list
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+              required:
+                - name
+      responses:
+        '200':
+          description: List updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    $ref: '#/components/schemas/List'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to list
+        '404':
+          description: List not found
+        '500':
+          description: Server error
+
+    delete:
+      summary: Delete a list
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: List deleted successfully
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to list
+        '404':
+          description: List not found
+        '500':
+          description: Server error
+
+  /lists/{listId}/bookmarks:
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get bookmarks in a list
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: List of bookmarks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmarks:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to list
+        '404':
+          description: List not found
+        '500':
+          description: Server error
+          
+    post:
+      summary: Add a bookmark to a list
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bookmarkId:
+                  type: string
+                  format: uuid
+              required:
+                - bookmarkId
+      responses:
+        '200':
+          description: Bookmark added to list successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to list
+        '404':
+          description: List not found
+        '500':
+          description: Server error
+
+  /lists/{listId}/bookmarks/{bookmarkId}:
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: bookmarkId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      summary: Remove a bookmark from a list
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Bookmark removed from list successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to list
+        '404':
+          description: List not found
         '500':
           description: Server error 

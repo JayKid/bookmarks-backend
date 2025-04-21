@@ -13,6 +13,9 @@ import appConfig from './config';
 import UsersStore from './stores/Users';
 import UsersService from './services/Users';
 import UsersHandler from './handlers/Users';
+import ListsStore from './stores/Lists';
+import ListsService from './services/Lists';
+import ListsHandler from './handlers/Lists';
 import LabelsStore from './stores/Labels';
 import LabelsService from './services/Labels';
 import LabelsHandler from './handlers/Labels';
@@ -33,16 +36,17 @@ const database = KnexFactory({
 const usersStore = new UsersStore(database);
 const bookmarksStore = new BookmarksStore(database);
 const labelsStore = new LabelsStore(database);
-
+const listsStore = new ListsStore(database);
 // Initialize services
 const usersService = new UsersService(usersStore);
 const bookmarksService = new BookmarksService(bookmarksStore);
 const labelsService = new LabelsService(labelsStore);
-
+const listsService = new ListsService(listsStore);
 // Initialize handlers
 const usersHandler = new UsersHandler(usersService, passport);
 const bookmarksHandler = new BookmarksHandler(bookmarksService, labelsService);
 const labelsHandler = new LabelsHandler(labelsService);
+const listsHandler = new ListsHandler(listsService);
 
 // Initialize server
 const app = express();
@@ -99,6 +103,15 @@ app.get('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn
 app.post('/labels', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.createLabel);
 app.put('/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.updateLabel);
 app.delete('/labels/:labelId', passport.authenticate('session'), usersHandler.verifyLoggedIn, labelsHandler.deleteLabel);
+
+// Lists routes
+app.get("/lists", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.getLists);
+app.post("/lists", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.createList);
+app.put("/lists/:listId", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.updateList);
+app.delete("/lists/:listId", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.deleteList);
+app.post("/lists/:listId/bookmarks", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.addBookmarkToList);
+app.delete("/lists/:listId/bookmarks/:bookmarkId", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.removeBookmarkFromList);
+app.get("/lists/:listId/bookmarks", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.getBookmarksInList);
 
 // Start server
 app.listen(SERVER_PORT, () => {
