@@ -31,3 +31,28 @@ In order to create and populate your own `.env` file, duplicate the `.env-exampl
 + `npm start` will give you a nodemon process watching the TS files and running the node server on the port specified by `SERVER_PORT` on your `.env` file.
 
 + `npm run test` will run the Jest tests available.
+
+## API Documentation
+
+The API is documented using the OpenAPI 3.1.1 specification. You can find the complete API documentation in the `spec/openapi.yaml` file. This specification includes:
+
+- Detailed endpoint descriptions
+- Request/response schemas
+- Authentication requirements
+- Error handling
+
+You can use this specification with tools like [Swagger UI](https://swagger.io/tools/swagger-ui/) to:
+- Explore the API interactively
+- Test endpoints
+- Generate client SDKs
+- Generate API documentation
+
+### Key Endpoints
+
+The API provides endpoints for:
+- User authentication (signup, login, logout)
+- Bookmark management (CRUD operations)
+- Label management (CRUD operations)
+- Bookmark-Label relationship management
+
+All authenticated endpoints require a valid session cookie (`connect.sid`).

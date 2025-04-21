@@ -1,0 +1,501 @@
+openapi: 3.1.0
+info:
+  title: Bookmarks API
+  description: API for managing user bookmarks with labels
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Session cookie for authentication
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+      required:
+        - id
+        - email
+
+    Label:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - user_id
+
+    Bookmark:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+        thumbnail:
+          type: string
+          format: uri
+        user_id:
+          type: string
+          format: uuid
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - url
+        - user_id
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            type:
+              type: string
+            message:
+              type: string
+          required:
+            - type
+            - message
+      required:
+        - error
+
+paths:
+  /signup:
+    post:
+      summary: Create a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /login:
+    post:
+      summary: Log in to existing account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login successful
+        '400':
+          description: Invalid credentials
+
+  /logout:
+    post:
+      summary: Log out current user
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Logout successful
+        '400':
+          description: Error during logout
+
+  /user:
+    get:
+      summary: Get current user information
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+
+  /bookmarks:
+    get:
+      summary: Get user's bookmarks
+      security:
+        - sessionAuth: []
+      parameters:
+        - in: query
+          name: labelId
+          schema:
+            type: string
+            format: uuid
+          description: Filter bookmarks by label ID
+      responses:
+        '200':
+          description: List of bookmarks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmarks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Bookmark'
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to label
+        '404':
+          description: Label not found
+        '500':
+          description: Server error
+
+    post:
+      summary: Create a new bookmark
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                title:
+                  type: string
+                thumbnail:
+                  type: string
+                  format: uri
+              required:
+                - url
+      responses:
+        '200':
+          description: Bookmark created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmark:
+                    $ref: '#/components/schemas/Bookmark'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '500':
+          description: Server error
+
+  /bookmarks/{bookmarkId}:
+    parameters:
+      - name: bookmarkId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      summary: Update a bookmark
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                title:
+                  type: string
+                thumbnail:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Bookmark updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmark:
+                    $ref: '#/components/schemas/Bookmark'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to bookmark
+        '404':
+          description: Bookmark not found
+        '500':
+          description: Server error
+
+    delete:
+      summary: Delete a bookmark
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Bookmark deleted successfully
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to bookmark
+        '404':
+          description: Bookmark not found
+        '500':
+          description: Server error
+
+  /bookmarks/{bookmarkId}/labels/{labelId}:
+    parameters:
+      - name: bookmarkId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: labelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      summary: Add a label to a bookmark
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Label added to bookmark successfully
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to bookmark or label
+        '404':
+          description: Bookmark or label not found
+        '500':
+          description: Server error
+
+    delete:
+      summary: Remove a label from a bookmark
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Label removed from bookmark successfully
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to bookmark or label
+        '404':
+          description: Bookmark or label not found
+        '500':
+          description: Server error
+
+  /labels:
+    get:
+      summary: Get user's labels
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: List of labels retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  labels:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Label'
+        '401':
+          description: Not authenticated
+        '500':
+          description: Server error
+
+    post:
+      summary: Create a new label
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
+      responses:
+        '200':
+          description: Label created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  label:
+                    $ref: '#/components/schemas/Label'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '500':
+          description: Server error
+
+  /labels/{labelId}:
+    parameters:
+      - name: labelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      summary: Update a label
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
+      responses:
+        '200':
+          description: Label updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  label:
+                    $ref: '#/components/schemas/Label'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to label
+        '404':
+          description: Label not found
+        '500':
+          description: Server error
+
+    delete:
+      summary: Delete a label
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Label deleted successfully
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to label
+        '404':
+          description: Label not found
+        '500':
+          description: Server error 
