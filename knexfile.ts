@@ -1,13 +1,13 @@
 import type { Knex } from "knex";
-import appConfig from "./config";
 
 const config: { [key: string]: Knex.Config } = {
   development: {
     client: "postgresql",
     connection: {
-      database: appConfig.knex.database,
-      user: appConfig.knex.user,
-      password: appConfig.knex.password
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD
     },
     pool: {
       min: 2,
@@ -21,9 +21,10 @@ const config: { [key: string]: Knex.Config } = {
   production: {
     client: "postgresql",
     connection: {
-      database: appConfig.knex.database,
-      user: appConfig.knex.user,
-      password: appConfig.knex.password
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD
     },
     pool: {
       min: 2,
@@ -33,7 +34,6 @@ const config: { [key: string]: Knex.Config } = {
       tableName: "knex_migrations"
     }
   }
-
 };
 
 module.exports = config;

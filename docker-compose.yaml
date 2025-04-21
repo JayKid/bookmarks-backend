@@ -6,9 +6,9 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER:-bookmarks-admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-bookmarks-password}
-      POSTGRES_DB: ${DB_NAME:-bookmarks-db}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - ./db:/var/lib/postgresql/data
     ports:
@@ -16,7 +16,7 @@ services:
     networks:
       - bookmarks-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-bookmarks-admin} -d ${DB_NAME:-bookmarks-db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -24,19 +24,20 @@ services:
   migrations:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.migrations
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DB_USER=${DB_USER:-bookmarks-admin}
-      - DB_PASSWORD=${DB_PASSWORD:-bookmarks-password}
-      - DB_NAME=${DB_NAME:-bookmarks-db}
+      - NODE_ENV=${NODE_ENV}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
       - DB_HOST=db
     depends_on:
       db:
         condition: service_healthy
-    command: npm run migrate
     networks:
       - bookmarks-network
+    volumes:
+      - ./.env:/app/.env
     profiles:
       - dev
       - prod
@@ -47,18 +48,21 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DB_USER=${DB_USER:-bookmarks-admin}
-      - DB_PASSWORD=${DB_PASSWORD:-bookmarks-password}
-      - DB_NAME=${DB_NAME:-bookmarks-db}
+      - NODE_ENV=${NODE_ENV}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
       - DB_HOST=db
-      - SERVER_PORT=${SERVER_PORT:-3000}
+      - SERVER_PORT=${SERVER_PORT}
+      - SESSION_SECRET=${SESSION_SECRET}
     ports:
-      - "${SERVER_PORT:-3000}:${SERVER_PORT:-3000}"
+      - "${SERVER_PORT}:${SERVER_PORT}"
     depends_on:
       - migrations
     networks:
       - bookmarks-network
+    volumes:
+      - ./.env:/app/.env
 
   adminer:
     image: adminer
@@ -66,7 +70,7 @@ services:
     ports:
       - 8080:8080
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
+      - NODE_ENV=${NODE_ENV}
     networks:
       - bookmarks-network
     profiles:
