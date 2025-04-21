@@ -41,12 +41,6 @@ The API is documented using the OpenAPI 3.1.1 specification. You can find the co
 - Authentication requirements
 - Error handling
 
-You can use this specification with tools like [Swagger UI](https://swagger.io/tools/swagger-ui/) to:
-- Explore the API interactively
-- Test endpoints
-- Generate client SDKs
-- Generate API documentation
-
 ### Key Endpoints
 
 The API provides endpoints for:
