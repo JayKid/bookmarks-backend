@@ -16,7 +16,7 @@ export default class BookmarksService {
         return await this.bookmarksStore.addBookmark({ url, title, thumbnail, userId });
     }
 
-    public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Pick<Bookmark, 'url' | 'title'>) => {
+    public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Partial<Pick<Bookmark, 'url' | 'title' | 'thumbnail'>>) => {
         return await this.bookmarksStore.updateBookmark(bookmarkId, fieldsToUpdate);
     }
 

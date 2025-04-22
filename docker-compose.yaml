@@ -21,6 +21,21 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - bookmarks-network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   migrations:
     build:
       context: .
@@ -55,10 +70,13 @@ services:
       - DB_HOST=db
       - SERVER_PORT=${SERVER_PORT}
       - SESSION_SECRET=${SESSION_SECRET}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     depends_on:
       - migrations
+      - redis
     networks:
       - bookmarks-network
     volumes:
@@ -79,3 +97,6 @@ services:
 networks:
   bookmarks-network:
     driver: bridge
+
+volumes:
+  redis-data:
