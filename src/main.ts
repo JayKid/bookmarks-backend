@@ -107,6 +107,7 @@ app.delete('/labels/:labelId', passport.authenticate('session'), usersHandler.ve
 // Lists routes
 app.get("/lists", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.getLists);
 app.post("/lists", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.createList);
+app.get("/lists/:listId", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.getList);
 app.put("/lists/:listId", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.updateList);
 app.delete("/lists/:listId", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.deleteList);
 app.post("/lists/:listId/bookmarks", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.addBookmarkToList);

@@ -22,6 +22,7 @@ describe("ListsHandler", () => {
     beforeEach(() => {
         mockService = {
             getLists: jest.fn(),
+            getList: jest.fn(),
             createList: jest.fn(),
             updateList: jest.fn(),
             deleteList: jest.fn(),
@@ -327,6 +328,68 @@ describe("ListsHandler", () => {
             });
             expect(mockService.getBookmarksInList).toHaveBeenCalledWith(listId);
             expect(mockJson).toHaveBeenCalledWith({ bookmarks: mockBookmarks });
+        });
+    });
+
+    describe("getList", () => {
+        it("should get a list by id", async () => {
+            const listId = randomUUID();
+            const mockList = {
+                id: listId,
+                name: "Test List",
+                description: "Test Description",
+                user_id: mockReq.user!.id,
+            };
+
+            mockReq.params = { listId };
+            mockService.getList.mockResolvedValue(mockList);
+
+            await handler.getList(mockReq as Request, mockRes as Response);
+
+            expect(mockService.getList).toHaveBeenCalledWith(listId, mockReq.user!.id);
+            expect(mockStatus).toHaveBeenCalledWith(200);
+            expect(mockJson).toHaveBeenCalledWith({ list: mockList });
+        });
+
+        it("should handle missing listId", async () => {
+            mockReq.params = {};
+
+            await handler.getList(mockReq as Request, mockRes as Response);
+
+            expect(mockStatus).toHaveBeenCalledWith(400);
+            expect(mockJson).toHaveBeenCalledWith({
+                error: { type: "missing-list-id", message: "missing list ID" },
+            });
+        });
+
+        it("should handle ListDoesNotExistError", async () => {
+            const listId = randomUUID();
+            mockReq.params = { listId };
+            mockService.getList.mockResolvedValue(
+                new ListDoesNotExistError("List not found")
+            );
+
+            await handler.getList(mockReq as Request, mockRes as Response);
+
+            expect(mockStatus).toHaveBeenCalledWith(404);
+            expect(mockJson).toHaveBeenCalledWith({
+                error: { type: "list-does-not-exist", message: "List not found" },
+            });
+        });
+
+        it("should handle ListError", async () => {
+            const listId = randomUUID();
+            mockReq.params = { listId };
+            mockService.getList.mockResolvedValue(
+                new ListError("Error retrieving list")
+            );
+
+            await handler.getList(mockReq as Request, mockRes as Response);
+
+            expect(mockStatus).toHaveBeenCalledWith(500);
+            expect(mockJson).toHaveBeenCalledWith({
+                error: { type: "list-error", message: "Error retrieving list" },
+            });
         });
     });
 }); 

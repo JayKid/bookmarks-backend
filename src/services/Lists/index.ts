@@ -14,6 +14,10 @@ export default class ListsService {
         return await this.listsStore.getLists(userId);
     };
 
+    public getList = async (listId: string, userId: string) => {
+        return await this.listsStore.getList(listId, userId);
+    };
+
     public createList = async ({ name, description, userId }: { name: string, description?: string, userId: string }) => {
         return await this.listsStore.createList({ name, description, userId });
     }

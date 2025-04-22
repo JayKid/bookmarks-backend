@@ -160,7 +160,7 @@ export default class BookmarksStore {
         }
     }
 
-    public addLabelToBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<true | BookmarkLabelError | BookmarkAlreadyHasLabelError> => {
+    public addLabelToBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<Bookmark | BookmarkLabelError | BookmarkAlreadyHasLabelError> => {
         try {
             await this.getBookmarksLabelsTable().insert({
                 id: randomUUID(),
@@ -168,7 +168,48 @@ export default class BookmarksStore {
                 label_id: labelId,
             }).returning('id');
 
-            return true;
+            // Fetch the updated bookmark with its labels
+            const result = await this.database.raw(`
+                SELECT b.id, b.url, b.title, b.thumbnail, b.user_id, b.created_at, b.updated_at, l.id as label_id, l.name as label_name
+                FROM bookmarks b
+                LEFT JOIN labels_bookmarks lb ON lb.bookmark_id = b.id
+                LEFT JOIN labels l ON l.id = lb.label_id
+                WHERE b.id = ?
+            `, bookmarkId);
+
+            if (!result.rows || result.rows.length === 0) {
+                return new BookmarkError("There was an error retrieving the updated bookmark");
+            }
+
+            // Process the result to construct the bookmark with its labels
+            const bookmark: Bookmark = {
+                id: result.rows[0].id,
+                url: result.rows[0].url,
+                title: result.rows[0].title,
+                thumbnail: result.rows[0].thumbnail,
+                user_id: result.rows[0].user_id,
+                created_at: result.rows[0].created_at,
+                updated_at: result.rows[0].updated_at,
+                labels: []
+            };
+
+            // Add all labels to the bookmark
+            result.rows.forEach((row: BookmarkWithOptionalLabelRow) => {
+                if (row.label_id && row.label_name) {
+                    if (!bookmark.labels) {
+                        bookmark.labels = [];
+                    }
+                    const labelExists = bookmark.labels.some(label => label.id === row.label_id);
+                    if (!labelExists) {
+                        bookmark.labels.push({
+                            id: row.label_id,
+                            name: row.label_name
+                        });
+                    }
+                }
+            });
+
+            return bookmark;
         } catch (err) {
             //@ts-ignore for err containing constraint
             if (err?.constraint === 'labels_bookmarks_composite_index') {
@@ -178,16 +219,55 @@ export default class BookmarksStore {
         }
     }
 
-    public removeLabelFromBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<true | BookmarkLabelError | BookmarkAlreadyExistsError> => {
+    public removeLabelFromBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }): Promise<Bookmark | BookmarkLabelError | BookmarkDoesNotHaveLabelError> => {
         try {
             const deletionResult = await this.getBookmarksLabelsTable().where('bookmark_id', bookmarkId).andWhere('label_id', labelId).delete();
             if (deletionResult === 0) {
                 return new BookmarkDoesNotHaveLabelError(`The bookmark with ID: ${bookmarkId} does not have a label with ID: ${labelId}`);
             }
-            if (deletionResult === 1) {
-                return true;
+
+            // Fetch the updated bookmark with its labels
+            const result = await this.database.raw(`
+                SELECT b.id, b.url, b.title, b.thumbnail, b.user_id, b.created_at, b.updated_at, l.id as label_id, l.name as label_name
+                FROM bookmarks b
+                LEFT JOIN labels_bookmarks lb ON lb.bookmark_id = b.id
+                LEFT JOIN labels l ON l.id = lb.label_id
+                WHERE b.id = ?
+            `, bookmarkId);
+
+            if (!result.rows || result.rows.length === 0) {
+                return new BookmarkError("There was an error retrieving the updated bookmark");
             }
-            return new BookmarkLabelError("There was an error removing the label from the bookmark");
+
+            // Process the result to construct the bookmark with its labels
+            const bookmark: Bookmark = {
+                id: result.rows[0].id,
+                url: result.rows[0].url,
+                title: result.rows[0].title,
+                thumbnail: result.rows[0].thumbnail,
+                user_id: result.rows[0].user_id,
+                created_at: result.rows[0].created_at,
+                updated_at: result.rows[0].updated_at,
+                labels: []
+            };
+
+            // Add all labels to the bookmark
+            result.rows.forEach((row: BookmarkWithOptionalLabelRow) => {
+                if (row.label_id && row.label_name) {
+                    if (!bookmark.labels) {
+                        bookmark.labels = [];
+                    }
+                    const labelExists = bookmark.labels.some(label => label.id === row.label_id);
+                    if (!labelExists) {
+                        bookmark.labels.push({
+                            id: row.label_id,
+                            name: row.label_name
+                        });
+                    }
+                }
+            });
+
+            return bookmark;
         } catch (err) {
             return new BookmarkLabelError("There was an error removing the label from the bookmark");
         }

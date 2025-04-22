@@ -11,6 +11,7 @@ describe("ListsService", () => {
     beforeEach(() => {
         mockStore = {
             getLists: jest.fn(),
+            getList: jest.fn(),
             createList: jest.fn(),
             updateList: jest.fn(),
             deleteList: jest.fn(),
@@ -169,6 +170,36 @@ describe("ListsService", () => {
             const result = await service.getBookmarksInList(listId);
             expect(result).toEqual(mockBookmarks);
             expect(mockStore.getBookmarksInList).toHaveBeenCalledWith(listId);
+        });
+    });
+
+    describe("getList", () => {
+        it("should get a list by ID through store", async () => {
+            const listId = randomUUID();
+            const userId = randomUUID();
+            const mockList = {
+                id: listId,
+                name: "Test List",
+                description: "Test Description",
+                user_id: userId,
+            };
+
+            mockStore.getList.mockResolvedValue(mockList);
+
+            const result = await service.getList(listId, userId);
+            expect(result).toEqual(mockList);
+            expect(mockStore.getList).toHaveBeenCalledWith(listId, userId);
+        });
+
+        it("should return error when list does not exist", async () => {
+            const listId = randomUUID();
+            const userId = randomUUID();
+            const mockError = new ListDoesNotExistError(`The list with id: ${listId} does not exist or does not belong to user`);
+
+            mockStore.getList.mockResolvedValue(mockError);
+
+            const result = await service.getList(listId, userId);
+            expect(result).toEqual(mockError);
         });
     });
 }); 
