@@ -190,4 +190,21 @@ export default class ListsStore {
             return new ListError("There was an error retrieving bookmarks from the list");
         }
     }
+
+    public getList = async (listId: string, userId: string): Promise<List | ListDoesNotExistError | ListError> => {
+        try {
+            const lists = await this.getTable().where({
+                'id': listId,
+                'user_id': userId
+            });
+            
+            if (lists.length !== 1) {
+                return new ListDoesNotExistError(`The list with id: ${listId} does not exist or does not belong to user`);
+            }
+            
+            return lists[0];
+        } catch (err) {
+            return new ListError("An unexpected error occurred while retrieving the list");
+        }
+    }
 } 
