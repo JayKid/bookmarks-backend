@@ -379,6 +379,13 @@ paths:
       responses:
         '200':
           description: Label added to bookmark successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmark:
+                    $ref: '#/components/schemas/Bookmark'
         '400':
           description: Invalid request
         '401':
@@ -397,6 +404,13 @@ paths:
       responses:
         '200':
           description: Label removed from bookmark successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmark:
+                    $ref: '#/components/schemas/Bookmark'
         '400':
           description: Invalid request
         '401':

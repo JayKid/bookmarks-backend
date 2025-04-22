@@ -1,5 +1,6 @@
 import { Bookmark } from "../../interfaces/Bookmark";
 import BookmarksStore from "../../stores/Bookmarks";
+import { BookmarkAlreadyHasLabelError, BookmarkDoesNotHaveLabelError, BookmarkError, BookmarkLabelError } from "../../errors";
 
 export default class BookmarksService {
     private bookmarksStore;
@@ -16,7 +17,7 @@ export default class BookmarksService {
         return await this.bookmarksStore.addBookmark({ url, title, thumbnail, userId });
     }
 
-    public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Pick<Bookmark, 'url' | 'title'>) => {
+    public updateBookmark = async (bookmarkId: string, fieldsToUpdate: Pick<Bookmark, 'url' | 'title' | 'thumbnail'>) => {
         return await this.bookmarksStore.updateBookmark(bookmarkId, fieldsToUpdate);
     }
 
@@ -24,11 +25,11 @@ export default class BookmarksService {
         return await this.bookmarksStore.deleteBookmark(bookmarkId);
     }
 
-    public addLabelToBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }) => {
+    public addLabelToBookmark = async ({ bookmarkId, labelId, userId }: { bookmarkId: string, labelId: string, userId?: string }) => {
         return await this.bookmarksStore.addLabelToBookmark({ bookmarkId, labelId });
     }
 
-    public removeLabelFromBookmark = async ({ bookmarkId, labelId }: { bookmarkId: string, labelId: string }) => {
+    public removeLabelFromBookmark = async ({ bookmarkId, labelId, userId }: { bookmarkId: string, labelId: string, userId?: string }) => {
         return await this.bookmarksStore.removeLabelFromBookmark({ bookmarkId, labelId });
     }
 
