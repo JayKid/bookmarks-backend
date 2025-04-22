@@ -270,4 +270,39 @@ export default class ListsHandler {
 
         return res.status(200).json({ bookmarks });
     }
+
+    public getList = async (req: Request, res: Response) => {
+        if (!req.params?.listId) {
+            return res.status(400).json({
+                error: {
+                    type: "missing-list-id",
+                    message: "missing list ID"
+                }
+            });
+        }
+
+        const { listId } = req.params;
+        // @ts-ignore because user is guaranteed by the middleware
+        const userId = req.user.id;
+
+        const list = await this.listsService.getList(listId, userId);
+        if (list instanceof ListDoesNotExistError) {
+            return res.status(404).json({
+                error: {
+                    type: list.type,
+                    message: list.errorMessage
+                }
+            });
+        }
+        if (list instanceof ListError) {
+            return res.status(500).json({
+                error: {
+                    type: "list-error",
+                    message: list.errorMessage,
+                }
+            });
+        }
+
+        return res.status(200).json({ list });
+    };
 } 

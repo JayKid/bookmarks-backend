@@ -325,8 +325,7 @@ test('updateBookmark should handle an unknown error when updating the bookmark',
 
 test('updateBookmark should call the service with the right parameters and return the updated bookmark', async () => {
     const jsonMocked = jest.fn();
-    const sendMocked = jest.fn();
-    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked, send: sendMocked });
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
     const request: any = {
         ...getMockedUser(),
         params: {
@@ -341,7 +340,7 @@ test('updateBookmark should call the service with the right parameters and retur
         status: statusMocked
     };
 
-    const returnValue = {};
+    const returnValue = { id: randomUUID(), url: "https://www.wikipedia.org/", title: "The updated bookmark title" };
     const mockedUpdateBookmark = jest.fn().mockReturnValue(returnValue);
     // @ts-ignore
     bookmarksService.updateBookmark = mockedUpdateBookmark;
@@ -352,8 +351,8 @@ test('updateBookmark should call the service with the right parameters and retur
     await bookmarksHandler.updateBookmark(request, response);
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(200);
-    expect(mockedUpdateBookmark).toHaveBeenCalledWith(request.params.bookmarkId, { url: request.body.url, title: request.body.title });
-    expect(sendMocked).toHaveBeenCalled();
+    expect(mockedUpdateBookmark).toHaveBeenCalledWith(request.params.bookmarkId, { url: request.body.url, title: request.body.title, thumbnail: undefined });
+    expect(jsonMocked).toHaveBeenCalledWith({ bookmark: returnValue });
 });
 
 test('deleteBookmark should return an error when no bookmarkId is provided', async () => {
@@ -666,10 +665,9 @@ test('addLabelToBookmark should return an error when the bookmark already has th
     expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-already-has-label");
 });
 
-test('addLabelToBookmark should call the service with the right parameters and return the new bookmark', async () => {
+test('addLabelToBookmark should call the service with the right parameters and return the updated bookmark', async () => {
     const jsonMocked = jest.fn();
-    const sendMocked = jest.fn();
-    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked, send: sendMocked });
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
     const request: any = {
         ...getMockedUser(),
         params: {
@@ -681,7 +679,11 @@ test('addLabelToBookmark should call the service with the right parameters and r
         status: statusMocked
     };
 
-    const returnValue = {};
+    const returnValue = { 
+        id: request.params.bookmarkId, 
+        url: "https://www.example.com", 
+        labels: [{ id: request.params.labelId, name: "Test Label" }] 
+    };
     const mockedAddLabelToBookmark = jest.fn().mockReturnValue(returnValue);
     // @ts-ignore
     bookmarksService.addLabelToBookmark = mockedAddLabelToBookmark;
@@ -695,7 +697,7 @@ test('addLabelToBookmark should call the service with the right parameters and r
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(200);
     expect(mockedAddLabelToBookmark).toHaveBeenCalledWith({ bookmarkId: request.params.bookmarkId, labelId: request.params.labelId, userId: request.user.id });
-    expect(sendMocked).toHaveBeenCalled();
+    expect(jsonMocked).toHaveBeenCalledWith({ bookmark: returnValue });
 });
 
 test('removeLabelFromBookmark should return an error when no bookmarkId is provided', async () => {
@@ -882,10 +884,9 @@ test('removeLabelFromBookmark should return an error when the bookmark does not 
     expect(jsonMocked.mock.lastCall[0].error.type).toBe("bookmark-does-not-have-label");
 });
 
-test('removeLabelFromBookmark should call the service with the right parameters and return 200', async () => {
+test('removeLabelFromBookmark should call the service with the right parameters and return the updated bookmark', async () => {
     const jsonMocked = jest.fn();
-    const sendMocked = jest.fn();
-    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked, send: sendMocked });
+    const statusMocked = jest.fn().mockReturnValue({ json: jsonMocked });
     const request: any = {
         ...getMockedUser(),
         params: {
@@ -897,7 +898,11 @@ test('removeLabelFromBookmark should call the service with the right parameters 
         status: statusMocked
     };
 
-    const returnValue = {};
+    const returnValue = { 
+        id: request.params.bookmarkId, 
+        url: "https://www.example.com", 
+        labels: [] 
+    };
     const mockedRemoveLabelFromBookmark = jest.fn().mockReturnValue(returnValue);
     // @ts-ignore
     bookmarksService.removeLabelFromBookmark = mockedRemoveLabelFromBookmark;
@@ -911,5 +916,5 @@ test('removeLabelFromBookmark should call the service with the right parameters 
     // @ts-ignore
     expect(statusMocked).toHaveBeenCalledWith(200);
     expect(mockedRemoveLabelFromBookmark).toHaveBeenCalledWith({ bookmarkId: request.params.bookmarkId, labelId: request.params.labelId, userId: request.user.id });
-    expect(sendMocked).toHaveBeenCalled();
+    expect(jsonMocked).toHaveBeenCalledWith({ bookmark: returnValue });
 });

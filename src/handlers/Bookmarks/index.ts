@@ -180,18 +180,18 @@ export default class BookmarksHandler {
         };
 
         // Update bookmark
-        const updatedBookmark = await this.bookmarksService.updateBookmark(bookmarkId, fieldsToUpdate);
+        const bookmark = await this.bookmarksService.updateBookmark(bookmarkId, fieldsToUpdate);
         // Deal with errors if needed
-        if (updatedBookmark instanceof BookmarkError) {
+        if (bookmark instanceof BookmarkError) {
             return res.status(500).json({
                 error: {
-                    type: updatedBookmark.type,
-                    message: updatedBookmark.errorMessage,
+                    type: bookmark.type,
+                    message: bookmark.errorMessage,
                 }
             });
         }
         // Return in the appropriate format
-        return res.status(200).send({ bookmark: updatedBookmark });
+        return res.status(200).json({ bookmark });
     }
 
     public deleteBookmark = async (req: Request, res: Response) => {
@@ -314,7 +314,7 @@ export default class BookmarksHandler {
             });
         }
         // Return in the appropriate format
-        return res.status(200).send();
+        return res.status(200).json({ bookmark });
     }
 
     public removeLabelFromBookmark = async (req: Request, res: Response) => {
@@ -390,7 +390,7 @@ export default class BookmarksHandler {
         }
 
         // Return in the appropriate format
-        return res.status(200).send();
+        return res.status(200).json({ bookmark });
     }
 
     private isValidUrl(url: string): boolean {

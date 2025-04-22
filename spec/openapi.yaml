@@ -379,6 +379,13 @@ paths:
       responses:
         '200':
           description: Label added to bookmark successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmark:
+                    $ref: '#/components/schemas/Bookmark'
         '400':
           description: Invalid request
         '401':
@@ -397,6 +404,13 @@ paths:
       responses:
         '200':
           description: Label removed from bookmark successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmark:
+                    $ref: '#/components/schemas/Bookmark'
         '400':
           description: Invalid request
         '401':
@@ -588,6 +602,30 @@ paths:
         schema:
           type: string
           format: uuid
+    get:
+      summary: Get a list by ID
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: List retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    $ref: '#/components/schemas/List'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden access to list
+        '404':
+          description: List not found
+        '500':
+          description: Server error
     put:
       summary: Update a list
       security:
