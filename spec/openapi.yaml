@@ -124,6 +124,137 @@ components:
         - name
         - user_id
 
+    ExportData:
+      type: object
+      properties:
+        version:
+          type: string
+          description: Version of the export format
+          example: "1.0"
+        exportDate:
+          type: string
+          format: date-time
+          description: Date and time when the export was created
+        bookmarks:
+          type: array
+          description: List of all user bookmarks (without user_id field)
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Bookmark'
+              - type: object
+                properties:
+                  user_id:
+                    type: null
+                required: []
+        labels:
+          type: array
+          description: List of all user labels (without user_id field)
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Label'
+              - type: object
+                properties:
+                  user_id:
+                    type: null
+                  bookmarks:
+                    type: array
+                    description: Bookmarks associated with this label
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                      required:
+                        - id
+                required: []
+        lists:
+          type: array
+          description: List of all user lists (without user_id field), including their associated bookmarks
+          items:
+            allOf:
+              - $ref: '#/components/schemas/List'
+              - type: object
+                properties:
+                  user_id:
+                    type: null
+                  bookmarks:
+                    type: array
+                    description: Bookmarks associated with this list
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                      required:
+                        - id
+                required: []
+      required:
+        - version
+        - exportDate
+        - bookmarks
+        - labels
+        - lists
+
+    ImportResults:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Whether the import operation was successful
+        results:
+          type: object
+          properties:
+            labels:
+              type: object
+              properties:
+                created:
+                  type: integer
+                  description: Number of labels successfully created
+                errors:
+                  type: integer
+                  description: Number of labels that could not be created
+            bookmarks:
+              type: object
+              properties:
+                created:
+                  type: integer
+                  description: Number of bookmarks successfully created
+                errors:
+                  type: integer
+                  description: Number of bookmarks that could not be created
+            lists:
+              type: object
+              properties:
+                created:
+                  type: integer
+                  description: Number of lists successfully created
+                errors:
+                  type: integer
+                  description: Number of lists that could not be created
+            bookmarkLabels:
+              type: object
+              properties:
+                created:
+                  type: integer
+                  description: Number of bookmark-label associations successfully created
+                errors:
+                  type: integer
+                  description: Number of bookmark-label associations that could not be created
+            listBookmarks:
+              type: object
+              properties:
+                created:
+                  type: integer
+                  description: Number of list-bookmark associations successfully created
+                errors:
+                  type: integer
+                  description: Number of list-bookmark associations that could not be created
+      required:
+        - success
+        - results
+
 paths:
   /signup:
     post:
@@ -791,4 +922,73 @@ paths:
         '404':
           description: List not found
         '500':
-          description: Server error 
+          description: Server error
+
+  /export:
+    get:
+      summary: Export all user bookmarks, labels, and lists
+      description: |
+        Exports all user data (bookmarks, labels, and lists) in a JSON format.
+        The response is a JSON file with appropriate headers for file download.
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Export successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportData'
+        '401':
+          description: Unauthorized - User not logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /import:
+    post:
+      summary: Import bookmarks, labels, and lists
+      description: |
+        Imports user data (bookmarks, labels, and lists) from a previously exported JSON file.
+        The import process creates new entities with new IDs while maintaining the relationships
+        between them based on the original IDs in the export file.
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportData'
+      responses:
+        '200':
+          description: Import successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResults'
+        '400':
+          description: Invalid import format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - User not logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error' 

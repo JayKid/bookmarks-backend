@@ -22,6 +22,7 @@ import LabelsHandler from './handlers/Labels';
 import { exit } from 'process';
 import ThumbnailWorker from './jobs/thumbnailWorker';
 import TitleWorker from './jobs/titleWorker';
+import ImportExportHandler from './handlers/ImportExport';
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ const usersHandler = new UsersHandler(usersService, passport);
 const bookmarksHandler = new BookmarksHandler(bookmarksService, labelsService);
 const labelsHandler = new LabelsHandler(labelsService);
 const listsHandler = new ListsHandler(listsService);
+const importExportHandler = new ImportExportHandler(bookmarksService, labelsService, listsService);
 
 // Initialize thumbnail and title workers only when not in test environment
 const isTestEnvironment = process.env.NODE_ENV === 'test';
@@ -122,6 +124,10 @@ app.delete("/lists/:listId", passport.authenticate('session'), usersHandler.veri
 app.post("/lists/:listId/bookmarks", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.addBookmarkToList);
 app.delete("/lists/:listId/bookmarks/:bookmarkId", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.removeBookmarkFromList);
 app.get("/lists/:listId/bookmarks", passport.authenticate('session'), usersHandler.verifyLoggedIn, listsHandler.getBookmarksInList);
+
+// Import/Export routes
+app.get("/export", passport.authenticate('session'), usersHandler.verifyLoggedIn, importExportHandler.exportUserData);
+app.post("/import", passport.authenticate('session'), usersHandler.verifyLoggedIn, importExportHandler.importUserData);
 
 // Start server
 app.listen(SERVER_PORT, () => {

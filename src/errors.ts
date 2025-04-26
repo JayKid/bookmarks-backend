@@ -138,3 +138,21 @@ export class BookmarkNotInListError extends CustomError {
         this.errorMessage = args[0];
     }
 }
+
+export class ImportExportError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, ImportExportError);
+        this.type = "import-export-error";
+        this.errorMessage = args[0];
+    }
+}
+
+export class InvalidImportFormatError extends CustomError {
+    public constructor(...args: any[]) {
+        super(...args);
+        Error.captureStackTrace(this, InvalidImportFormatError);
+        this.type = "invalid-import-format";
+        this.errorMessage = args[0];
+    }
+}
