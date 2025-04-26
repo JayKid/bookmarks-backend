@@ -10,6 +10,7 @@ This is a backend API for managing bookmarks with labels and thumbnail support.
 - Create, read, update, delete lists
 - Add/remove bookmarks to lists
 - Automatic thumbnail extraction from bookmarked webpages
+- Import and export functionality for bookmarks, labels, and lists
 
 ## Thumbnail Functionality
 
@@ -166,3 +167,131 @@ The API is documented using the OpenAPI 3.1.1 specification. You can find the co
 - Error handling
 
 All authenticated endpoints require a valid session cookie (`connect.sid`).
+
+## Import/Export Functionality
+
+The API provides endpoints to export and import bookmark data, including bookmarks, labels, and lists.
+
+### Export
+
+**Endpoint:** `GET /export`
+
+This endpoint allows users to export all their bookmarks, labels, and lists in a single JSON file. The export includes:
+
+- All bookmarks with their associated labels
+- All labels
+- All lists with their associated bookmarks
+
+The export process preserves all relationships between entities:
+- Labels include references to their bookmarks (IDs only)
+- Lists include references to their bookmarks (IDs only)
+
+To avoid data duplication, relationships only include the necessary identifier references rather than duplicating the entire entity data.
+
+User IDs (`user_id`) are automatically removed from the exported data to allow for easy importing by different users.
+
+The response is a JSON file with the appropriate headers for file download.
+
+### Import
+
+**Endpoint:** `POST /import`
+
+This endpoint allows users to import bookmarks, labels, and lists from a previously exported JSON file.
+
+**Request Body:**
+```json
+{
+  "version": "1.0",
+  "exportDate": "2023-06-01T12:00:00.000Z",
+  "labels": [
+    {
+      "id": "original-label-id",
+      "name": "Work",
+      "bookmarks": [
+        {
+          "id": "original-bookmark-id"
+        }
+      ]
+    }
+  ],
+  "bookmarks": [
+    {
+      "id": "original-bookmark-id",
+      "url": "https://example.com",
+      "title": "Example Website",
+      "thumbnail": "https://example.com/image.jpg"
+    }
+  ],
+  "lists": [
+    {
+      "id": "original-list-id",
+      "name": "Reading List",
+      "description": "Articles to read later",
+      "bookmarks": [
+        {
+          "id": "original-bookmark-id"
+        }
+      ]
+    }
+  ]
+}
+```
+
+The import process:
+1. Creates labels first
+2. Creates bookmarks and associates them with labels
+3. Creates lists and adds bookmarks to them
+
+The import process maintains all relationships between entities:
+- Label associations with bookmarks are preserved
+- Bookmark associations with lists are preserved
+
+During import, all relationships are reconstructed by mapping the original IDs from the export file to the newly generated IDs in the database.
+
+All imported entities are automatically assigned to the current user, regardless of which user originally exported the data. This allows for sharing bookmark collections between users or restoring data to a new account.
+
+The response includes statistics about the import operation, including counts of successfully created items and any errors encountered.
+
+### Import Format
+
+The import format is a JSON object with the following structure:
+
+```json
+{
+  "version": "1.0",
+  "exportDate": "2023-06-01T12:00:00.000Z",
+  "labels": [
+    {
+      "id": "original-label-id",
+      "name": "Work",
+      "bookmarks": [
+        {
+          "id": "original-bookmark-id"
+        }
+      ]
+    }
+  ],
+  "bookmarks": [
+    {
+      "id": "original-bookmark-id",
+      "url": "https://example.com",
+      "title": "Example Website",
+      "thumbnail": "https://example.com/image.jpg"
+    }
+  ],
+  "lists": [
+    {
+      "id": "original-list-id",
+      "name": "Reading List",
+      "description": "Articles to read later",
+      "bookmarks": [
+        {
+          "id": "original-bookmark-id"
+        }
+      ]
+    }
+  ]
+}
+```
+
+During import, new IDs are generated for all items, and relationships are maintained based on the original IDs.
