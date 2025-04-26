@@ -20,6 +20,7 @@ import LabelsStore from './stores/Labels';
 import LabelsService from './services/Labels';
 import LabelsHandler from './handlers/Labels';
 import { exit } from 'process';
+import ThumbnailWorker from './jobs/thumbnailWorker';
 
 dotenv.config();
 
@@ -47,6 +48,12 @@ const usersHandler = new UsersHandler(usersService, passport);
 const bookmarksHandler = new BookmarksHandler(bookmarksService, labelsService);
 const labelsHandler = new LabelsHandler(labelsService);
 const listsHandler = new ListsHandler(listsService);
+
+// Initialize thumbnail worker only when not in test environment
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+if (!isTestEnvironment) {
+    const thumbnailWorker = new ThumbnailWorker(database);
+}
 
 // Initialize server
 const app = express();

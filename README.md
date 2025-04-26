@@ -1,4 +1,83 @@
-# Bookmarks backend
+# Bookmarks Backend
+
+This is a backend API for managing bookmarks with labels and thumbnail support.
+
+## Features
+
+- User authentication (login/signup)
+- Create, read, update, delete bookmarks
+- Add/remove labels to bookmarks
+- Create, read, update, delete lists
+- Add/remove bookmarks to lists
+- Automatic thumbnail extraction from bookmarked webpages
+
+## Thumbnail Functionality
+
+The system automatically extracts thumbnail images for bookmarks:
+
+1. When a user creates a bookmark without providing a thumbnail URL, the system adds the bookmark to the database with a `null` thumbnail.
+2. Simultaneously, an asynchronous job is queued to fetch the webpage content and extract a suitable thumbnail URL.
+3. The job looks for common meta tags that contain image URLs, such as:
+   - Open Graph (`og:image`)
+   - Twitter Card (`twitter:image`)
+   - Link with `rel="image_src"`
+   - Article image (`article:image`)
+4. If a suitable image URL is found, the bookmark record is updated in the database.
+5. The next time the client fetches the bookmark, the thumbnail URL will be included in the response.
+
+This approach ensures that:
+- Bookmark creation is fast and not blocked by the thumbnail extraction process
+- Thumbnails are extracted in the background without affecting the user experience
+- If thumbnail extraction fails, the bookmark still exists with a `null` thumbnail value
+
+## Setup
+
+### Prerequisites
+
+- Node.js
+- PostgreSQL
+- Redis (for job queue)
+
+### Environment Variables
+
+Create a `.env` file with the following variables:
+
+```
+NODE_ENV=development
+DB_HOST=localhost
+DB_NAME=bookmarks
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+SERVER_PORT=3000
+SESSION_SECRET=yoursecret
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+### Installation
+
+1. Install dependencies:
+   ```
+   npm install
+   ```
+
+2. Run migrations:
+   ```
+   npm run migrate
+   ```
+
+3. Start the server:
+   ```
+   npm start
+   ```
+
+### Docker
+
+To run with Docker:
+
+```
+docker-compose up
+```
 
 ## Motivation
 
