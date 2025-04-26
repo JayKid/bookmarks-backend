@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { BookmarkAlreadyExistsError, BookmarkAlreadyHasLabelError, BookmarkError, BookmarkDoesNotHaveLabelError, BookmarkDoesNotExistError, LabelDoesNotExistError } from "../../errors";
 import BookmarksService from "../../services/Bookmarks";
 import LabelsService from "../../services/Labels";
-import { thumbnailQueue } from "../../jobs/queues";
+import { thumbnailQueue, titleQueue } from "../../jobs/queues";
 
 export default class BookmarksHandler {
     private bookmarksService: BookmarksService;
@@ -111,6 +111,14 @@ export default class BookmarksHandler {
         // Queue a job to fetch and update the thumbnail if not provided
         if (!thumbnail) {
             thumbnailQueue.add('fetch-thumbnail', {
+                bookmarkId: bookmark.id,
+                url: processedUrl
+            });
+        }
+
+        // Queue a job to fetch and update the title if not provided
+        if (!title) {
+            titleQueue.add('fetch-title', {
                 bookmarkId: bookmark.id,
                 url: processedUrl
             });
