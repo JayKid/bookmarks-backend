@@ -38,4 +38,15 @@ export const thumbnailQueue = isTestEnvironment
             removeOnComplete: true,
             removeOnFail: 100 // keep the last 100 failed jobs
         }
+    });
+
+export const titleQueue = isTestEnvironment 
+    ? new MockQueue('title-processing') as unknown as Queue 
+    : new Queue('title-processing', {
+        connection: redisOptions,
+        defaultJobOptions: {
+            attempts: 3,
+            removeOnComplete: true,
+            removeOnFail: 100 // keep the last 100 failed jobs
+        }
     }); 

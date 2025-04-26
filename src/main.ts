@@ -21,6 +21,7 @@ import LabelsService from './services/Labels';
 import LabelsHandler from './handlers/Labels';
 import { exit } from 'process';
 import ThumbnailWorker from './jobs/thumbnailWorker';
+import TitleWorker from './jobs/titleWorker';
 
 dotenv.config();
 
@@ -49,10 +50,11 @@ const bookmarksHandler = new BookmarksHandler(bookmarksService, labelsService);
 const labelsHandler = new LabelsHandler(labelsService);
 const listsHandler = new ListsHandler(listsService);
 
-// Initialize thumbnail worker only when not in test environment
+// Initialize thumbnail and title workers only when not in test environment
 const isTestEnvironment = process.env.NODE_ENV === 'test';
 if (!isTestEnvironment) {
     const thumbnailWorker = new ThumbnailWorker(database);
+    const titleWorker = new TitleWorker(database);
 }
 
 // Initialize server
